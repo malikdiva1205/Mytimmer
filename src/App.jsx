@@ -10,12 +10,14 @@ import DashboardPage from './pages/DashboardPage';
 import CalendarPage from './pages/CalendarPage';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
+import StudyPartner from './components/StudyPartner';
 
 export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
         <ThemeToggle />
+        <StudyPartner />
         <WaveBackground />
         <div className="app-container">
           <Routes>
