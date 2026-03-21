@@ -279,3 +279,32 @@ export function CoffeeIcon({ size = 18, color, style }) {
     </svg>
   );
 }
+export function CoffeeMugIcon({ size = 24, style }) {
+  return (
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: 'inline-block', verticalAlign: 'middle', ...style }}
+    >
+      {/* Lid */}
+      <path d="M6 5h12v2H6V5z" fill="#5D4037" stroke="#3E2723" strokeWidth="1" />
+      <path d="M7 3h10v2H7V3z" fill="#4E342E" stroke="#3E2723" strokeWidth="1" />
+      
+      {/* Cup Body */}
+      <path d="M6.5 7L7.5 21h9l1-14h-11z" fill="#F5F5DC" stroke="#3E2723" strokeWidth="1.2" />
+      
+      {/* Sleeve */}
+      <path d="M7 10h10l-0.5 7H7.5L7 10z" fill="#D87A33" stroke="#3E2723" strokeWidth="1" />
+      
+      {/* Heart on Sleeve */}
+      <path 
+        d="M12 14.5c-1-1-2-0.5-2 0.5 0 1 1 1.5 2 2 1-0.5 2-1 2-2 0-1-1-1.5-2-0.5z" 
+        fill="#5D4037" 
+        stroke="none" 
+      />
+    </svg>
+  );
+}

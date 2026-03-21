@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import studyPartnerGif from '../assets/studypartner.gif';
-import { CoffeeIcon } from './DoodleIcons';
+import { CoffeeMugIcon } from './DoodleIcons';
 
 const GREETINGS = [
   "Hello! Ready to study?",
@@ -20,14 +20,12 @@ export default function StudyPartner() {
   const [showGreeting, setShowGreeting] = useState(false);
 
   useEffect(() => {
-    // Show initial greeting after a short delay
     const initialTimer = setTimeout(() => {
       showRandomGreeting();
     }, 2000);
 
-    // Occasionally show a new greeting
     const interval = setInterval(() => {
-      if (Math.random() > 0.7) { // 30% chance every 15s
+      if (Math.random() > 0.7) {
         showRandomGreeting();
       }
     }, 15000);
@@ -42,15 +40,16 @@ export default function StudyPartner() {
     const randomIdx = Math.floor(Math.random() * GREETINGS.length);
     setGreeting(GREETINGS[randomIdx]);
     setShowGreeting(true);
-    
-    // Hide after 4 seconds
     setTimeout(() => setShowGreeting(false), 4000);
   };
 
   return (
-    <div className="study-partner-container">
+    <div className="study-partner-container horizontal">
       <div className={`partner-greeting ${showGreeting ? 'visible' : ''}`}>
         {greeting}
+      </div>
+      <div className="coffee-mug-wrapper" onClick={showRandomGreeting} title="Cozy brew!">
+        <CoffeeMugIcon size={48} />
       </div>
       <img 
         src={studyPartnerGif} 
@@ -59,9 +58,6 @@ export default function StudyPartner() {
         onClick={showRandomGreeting}
         style={{ cursor: 'pointer', pointerEvents: 'auto' }}
       />
-      <div className="coffee-cup" onClick={showRandomGreeting} title="Click me for a greeting!">
-        <CoffeeIcon size={28} />
-      </div>
     </div>
   );
 }

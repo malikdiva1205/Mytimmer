@@ -853,7 +853,7 @@ body {
 /* ========== STUDY PARTNER GIF ========== */
 .study-partner-container {
   position: fixed;
-  right: 60px; /* Shifted left as requested */
+  right: 40px; /* Slight adjustment for wider layout */
   top: 50%;
   transform: translateY(-50%);
   z-index: 999;
@@ -863,6 +863,13 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
+}
+
+.study-partner-container.horizontal {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 15px;
+  right: 30px;
 }
 
 .study-partner-gif {
@@ -888,18 +895,23 @@ body {
   .study-partner-container { right: 20px; }
 }
 
-.coffee-cup {
-  color: var(--peach);
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+.coffee-mug-wrapper {
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
   animation: partnerFloat 6s ease-in-out infinite reverse;
   cursor: pointer;
   pointer-events: auto;
   transition: transform 0.3s ease;
+  margin-bottom: 5px; /* Sit a bit higher than the base of the gif desk */
 }
 
-.coffee-cup:hover {
-  transform: scale(1.2) rotate(10deg);
+.coffee-mug-wrapper:hover {
+  transform: scale(1.1) rotate(-5deg);
 }
+
+[data-theme='dark'] .coffee-mug-wrapper {
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4)) brightness(1.1);
+}
+
 
 /* Greeting Bubble */
 .partner-greeting {
