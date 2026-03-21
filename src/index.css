@@ -853,16 +853,20 @@ body {
 /* ========== STUDY PARTNER GIF ========== */
 .study-partner-container {
   position: fixed;
-  right: 20px;
+  right: 60px; /* Shifted left as requested */
   top: 50%;
   transform: translateY(-50%);
   z-index: 999;
-  pointer-events: none; /* Don't block clicks underneath */
+  pointer-events: none;
   animation: partnerFloat 6s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 .study-partner-gif {
-  width: 140px;
+  width: 200px; /* Increased size as requested */
   height: auto;
   opacity: 0.9;
   filter: drop-shadow(0 8px 16px rgba(0,0,0,0.1));
@@ -880,8 +884,23 @@ body {
 }
 
 @media (max-width: 1024px) {
-  .study-partner-gif { width: 100px; }
-  .study-partner-container { right: 10px; }
+  .study-partner-gif { width: 150px; }
+  .study-partner-container { right: 20px; }
+}
+
+.coffee-cup {
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid var(--border-card);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-medium);
+  box-shadow: var(--shadow-card);
+  animation: partnerFloat 6s ease-in-out infinite reverse; /* Opposite float */
 }
 
 @media (max-width: 768px) {
