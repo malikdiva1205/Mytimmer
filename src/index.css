@@ -881,8 +881,28 @@ body {
 }
 
 [data-theme='dark'] .study-partner-gif {
-  opacity: 1; /* More vibrant in dark mode as requested */
-  filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5)) contrast(1.1) brightness(1.05);
+  opacity: 1;
+  filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5)) contrast(1.05) brightness(1.1) saturate(1.1);
+}
+
+@keyframes steamFloat {
+  0% { transform: translateY(0) scaleX(1); opacity: 0.4; }
+  50% { transform: translateY(-5px) scaleX(1.1); opacity: 0.8; }
+  100% { transform: translateY(-10px) scaleX(1); opacity: 0; }
+}
+
+.steam-line {
+  animation: steamFloat 3s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+.steam-1 { animation-delay: 0s; }
+.steam-2 { animation-delay: 1s; }
+.steam-3 { animation-delay: 2s; }
+
+@keyframes mugWobble {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
 }
 
 @keyframes partnerFloat {
@@ -896,21 +916,23 @@ body {
 }
 
 .coffee-mug-wrapper {
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
-  animation: partnerFloat 6s ease-in-out infinite reverse;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+  animation: partnerFloat 6s ease-in-out infinite reverse, mugWobble 4s ease-in-out infinite;
   cursor: pointer;
   pointer-events: auto;
   transition: transform 0.3s ease;
-  margin-bottom: 5px; /* Sit a bit higher than the base of the gif desk */
+  margin-bottom: 8px;
+  transform-origin: bottom center;
 }
 
 .coffee-mug-wrapper:hover {
-  transform: scale(1.1) rotate(-5deg);
+  transform: scale(1.15) rotate(-8deg);
 }
 
 [data-theme='dark'] .coffee-mug-wrapper {
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4)) brightness(1.1);
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4)) brightness(1.1) contrast(1.1);
 }
+
 
 
 /* Greeting Bubble */

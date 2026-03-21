@@ -279,31 +279,39 @@ export function CoffeeIcon({ size = 18, color, style }) {
     </svg>
   );
 }
-export function CoffeeMugIcon({ size = 24, style }) {
+export function CoffeeMugIcon({ size = 64, style }) {
   return (
     <svg 
       width={size} 
       height={size} 
-      viewBox="0 0 24 24" 
+      viewBox="0 0 100 100" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      style={{ display: 'inline-block', verticalAlign: 'middle', ...style }}
+      style={{ display: 'inline-block', verticalAlign: 'middle', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.1))', ...style }}
     >
-      {/* Lid */}
-      <path d="M6 5h12v2H6V5z" fill="#5D4037" stroke="#3E2723" strokeWidth="1" />
-      <path d="M7 3h10v2H7V3z" fill="#4E342E" stroke="#3E2723" strokeWidth="1" />
+      {/* Animated Steam */}
+      <g className="steam-container">
+        <path d="M35 15c-2-5 2-10 0-15" stroke="#A1887F" strokeWidth="2.5" strokeLinecap="round" className="steam-line steam-1" />
+        <path d="M50 15c-2-5 2-10 0-15" stroke="#A1887F" strokeWidth="2.5" strokeLinecap="round" className="steam-line steam-2" />
+        <path d="M65 15c-2-5 2-10 0-15" stroke="#A1887F" strokeWidth="2.5" strokeLinecap="round" className="steam-line steam-3" />
+      </g>
+
+      {/* Lid - Slightly Irregular/Soft */}
+      <path d="M25 25c0-3 5-5 25-5s25 2 25 5v5H25v-5z" fill="#4E342E" stroke="#2D1B17" strokeWidth="2" />
+      <path d="M22 30h56v3c0 3-5 5-28 5s-28-2-28-5v-3z" fill="#5D4037" stroke="#2D1B17" strokeWidth="2" />
       
-      {/* Cup Body */}
-      <path d="M6.5 7L7.5 21h9l1-14h-11z" fill="#F5F5DC" stroke="#3E2723" strokeWidth="1.2" />
+      {/* Cup Body - Tapered & Soft */}
+      <path d="M28 38L32 90c1 4 5 7 18 7s17-3 18-7l4-52H28z" fill="#FDF5E6" stroke="#2D1B17" strokeWidth="2.2" />
       
-      {/* Sleeve */}
-      <path d="M7 10h10l-0.5 7H7.5L7 10z" fill="#D87A33" stroke="#3E2723" strokeWidth="1" />
+      {/* Sleeve - Curved/Aesthetic */}
+      <path d="M29 55c0-2 10-4 21-4s21 2 21 4l-1 18c0 2-10 4-20 4s-20-2-20-4l-1-18z" fill="#E69550" stroke="#2D1B17" strokeWidth="1.8" />
       
-      {/* Heart on Sleeve */}
+      {/* Heart - Larger/Central */}
       <path 
-        d="M12 14.5c-1-1-2-0.5-2 0.5 0 1 1 1.5 2 2 1-0.5 2-1 2-2 0-1-1-1.5-2-0.5z" 
-        fill="#5D4037" 
+        d="M50 62.5c-2-2-4-1-4 1s2 3 4 4c2-1 4-2 4-4s-2-3-4-1z" 
+        fill="#3E2723" 
         stroke="none" 
+        transform="scale(1.8) translate(-22.5, -28)" 
       />
     </svg>
   );
