@@ -75,6 +75,12 @@ export default function PomodoroPage() {
   const handleSave = () => {
     const spent = totalSeconds - remaining;
     if (spent <= 0) return;
+
+    // Stop if running
+    if (status === 'running') {
+      clearInterval(intervalRef.current);
+    }
+
     const now = new Date();
     saveSession({
       type: 'Pomodoro',
@@ -83,6 +89,10 @@ export default function PomodoroPage() {
       endTime: now.toISOString(),
       date: todayStr(),
     });
+
+    // Reset to idle
+    setStatus('idle');
+    setRemaining(totalSeconds);
     setSaved(true);
     triggerToast('Session saved');
   };
@@ -197,7 +207,7 @@ export default function PomodoroPage() {
           )}
         </div>
 
-        {(status === 'done' || status === 'paused') && !saved && totalSeconds - remaining > 0 && (
+        {status !== 'idle' && !saved && totalSeconds - remaining > 0 && (
           <div style={{ marginTop: '12px' }}>
             <button className="btn-primary" onClick={handleSave} style={{ width: '100%' }}>
               <SaveIcon size={16} color="white" /> Save Session

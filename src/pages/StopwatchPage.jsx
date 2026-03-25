@@ -42,6 +42,12 @@ export default function StopwatchPage() {
 
   const handleSave = () => {
     if (elapsed === 0) return;
+    
+    // Stop if running
+    if (status === 'running') {
+      clearInterval(intervalRef.current);
+    }
+
     const now = new Date();
     saveSession({
       type: 'Stopwatch',
@@ -50,6 +56,11 @@ export default function StopwatchPage() {
       endTime: now.toISOString(),
       date: todayStr(),
     });
+
+    // Reset everything
+    accumulatedRef.current = 0;
+    setElapsed(0);
+    setStatus('idle');
     setSaved(true);
     triggerToast('Session saved');
   };
@@ -115,7 +126,7 @@ export default function StopwatchPage() {
           )}
         </div>
 
-        {elapsed > 0 && !saved && status !== 'running' && (
+        {elapsed > 0 && !saved && (
           <div style={{ marginTop: '16px' }}>
             <button className="btn-primary" onClick={handleSave} style={{ width: '100%' }}>
               <SaveIcon size={16} color="white" /> Save Session
