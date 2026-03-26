@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import WaveBackground from '../components/WaveBackground';
-import { TrophyIcon, HomeIcon } from '../components/DoodleIcons';
+import Flashcard from '../components/Flashcard';
+import { TrophyIcon, StarIcon, PencilIcon, BookIcon } from '../components/DoodleIcons';
 import { API_BASE } from '../config';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,11 +15,10 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-const MEDALS = ['🥇', '🥈', '🥉'];
 const MEDAL_COLORS = [
-  { border: 'rgba(255, 215, 0, 0.5)', glow: 'rgba(255, 215, 0, 0.15)', rank: '#FFD700' },
-  { border: 'rgba(192, 192, 192, 0.5)', glow: 'rgba(192, 192, 192, 0.12)', rank: '#C0C0C0' },
-  { border: 'rgba(205, 127, 50, 0.5)',  glow: 'rgba(205, 127, 50, 0.12)',  rank: '#CD7F32' },
+  { border: 'rgba(255, 215, 0, 0.5)', glow: 'rgba(255, 215, 0, 0.15)', rank: '#FFD700', icon: TrophyIcon },
+  { border: 'rgba(192, 192, 192, 0.5)', glow: 'rgba(192, 192, 192, 0.12)', rank: '#C0C0C0', icon: StarIcon },
+  { border: 'rgba(205, 127, 50, 0.5)',  glow: 'rgba(205, 127, 50, 0.12)',  rank: '#CD7F32', icon: StarIcon },
 ];
 
 export default function LeaderboardPage() {
@@ -50,37 +49,49 @@ export default function LeaderboardPage() {
   }, [fetchLeaderboard]);
 
   return (
-    <>
-      <WaveBackground />
-      <div style={{
-        minHeight: '100vh',
-        padding: '28px 20px 48px',
-        maxWidth: '680px',
-        margin: '0 auto',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', paddingTop: '8px' }}>
-          <div>
-            <h1 style={{ fontFamily: 'Sofia, cursive', fontSize: '2rem', color: 'var(--text-dark)', margin: 0 }}>
-              Leaderboard
-            </h1>
-            <p style={{ fontSize: '0.84rem', color: 'var(--text-light)', marginTop: '4px' }}>
-              Ranked by total study time
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="btn-secondary"
-            style={{ padding: '9px 18px', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <HomeIcon size={15} /> Dashboard
+    <div style={{
+      minHeight: '100vh',
+      padding: '40px 20px',
+      position: 'relative',
+      zIndex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      <div 
+        className="flashcard"
+        style={{ maxWidth: '760px', width: '100%', padding: '40px 32px', margin: '0 auto', overflow: 'visible' }}
+      >
+        <div className="flashcard-nav" style={{ position: 'relative', top: 0, left: 0, right: 0, marginBottom: '24px' }}>
+          <button className="nav-btn" onClick={() => navigate(-1)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+          <button className="nav-btn" onClick={() => navigate('/dashboard')} title="Go to Dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+            Dashboard
           </button>
         </div>
 
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h1 style={{ fontFamily: 'Sofia, cursive', fontSize: '2.4rem', color: 'var(--text-dark)', margin: 0 }}>
+            Leaderboard
+          </h1>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-light)', marginTop: '6px' }}>
+            Ranked by total study time
+          </p>
+        </div>
+
         {/* Live badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
           <span style={{
             width: '8px', height: '8px', borderRadius: '50%',
             background: '#4caf82',
@@ -101,7 +112,7 @@ export default function LeaderboardPage() {
           </div>
         ) : entries.length === 0 ? (
           <div style={{
-            background: 'var(--bg-card)', backdropFilter: 'blur(12px)',
+            background: 'var(--bg-nav)', backdropFilter: 'blur(12px)',
             border: '1.5px solid var(--border-card)', borderRadius: '20px',
             padding: '48px 32px', textAlign: 'center',
             color: 'var(--text-light)', fontFamily: 'Nunito, sans-serif', fontSize: '0.9rem',
@@ -115,6 +126,7 @@ export default function LeaderboardPage() {
               const isTop3 = i < 3;
               const isMe = user && entry.id === user.id;
               const medal = MEDAL_COLORS[i];
+              const Icon = isTop3 ? medal.icon : null;
 
               return (
                 <div
@@ -127,12 +139,11 @@ export default function LeaderboardPage() {
                       ? 'linear-gradient(135deg, rgba(197,184,232,0.25), rgba(168,184,232,0.2))'
                       : isTop3
                         ? medal.glow
-                        : 'var(--bg-card)',
-                    backdropFilter: 'blur(12px)',
-                    border: `1.5px solid ${isMe ? 'rgba(197,184,232,0.7)' : isTop3 ? medal.border : 'var(--border-card)'}`,
+                        : 'var(--bg-nav)',
+                    border: `1.5px solid ${isMe ? 'rgba(197,184,232,0.7)' : isTop3 ? medal.border : 'rgba(197,184,232,0.3)'}`,
                     borderRadius: '18px',
                     padding: '16px 20px',
-                    boxShadow: isTop3 ? `0 4px 20px ${medal.glow}` : 'var(--shadow-card)',
+                    boxShadow: isTop3 ? `0 4px 20px ${medal.glow}` : 'none',
                     transition: 'all 0.3s ease',
                     position: 'relative',
                     overflow: 'hidden',
@@ -142,13 +153,15 @@ export default function LeaderboardPage() {
                   <div style={{
                     minWidth: '44px',
                     textAlign: 'center',
-                    fontSize: isTop3 ? '1.6rem' : '1rem',
                     fontFamily: 'Share Tech Mono, monospace',
                     color: isTop3 ? medal.rank : 'var(--text-light)',
                     fontWeight: 700,
                     lineHeight: 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
                   }}>
-                    {isTop3 ? MEDALS[i] : `#${i + 1}`}
+                    {isTop3 ? <Icon size={24} color={medal.rank} /> : <span style={{ fontSize: '1.2rem' }}>#{i + 1}</span>}
                   </div>
 
                   {/* Name + sessions */}
@@ -156,7 +169,7 @@ export default function LeaderboardPage() {
                     <div style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: '1rem',
+                      fontSize: '1.1rem',
                       color: 'var(--text-dark)',
                       display: 'flex',
                       alignItems: 'center',
@@ -165,15 +178,15 @@ export default function LeaderboardPage() {
                       {entry.name}
                       {isMe && (
                         <span style={{
-                          fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px',
+                          fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px',
                           borderRadius: '50px',
                           background: 'rgba(197,184,232,0.4)',
-                          color: 'var(--text-medium)',
+                          color: 'var(--text-dark)',
                           letterSpacing: '0.4px',
                         }}>YOU</span>
                       )}
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-light)', marginTop: '3px' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-medium)', marginTop: '4px' }}>
                       {entry.session_count} session{entry.session_count !== '1' ? 's' : ''}
                     </div>
                   </div>
@@ -181,7 +194,7 @@ export default function LeaderboardPage() {
                   {/* Time */}
                   <div style={{
                     fontFamily: 'Share Tech Mono, monospace',
-                    fontSize: '1.1rem',
+                    fontSize: '1.3rem',
                     fontWeight: 700,
                     color: isTop3 ? medal.rank : 'var(--text-dark)',
                     whiteSpace: 'nowrap',
@@ -196,11 +209,21 @@ export default function LeaderboardPage() {
 
         {/* Refresh hint */}
         {entries.length > 0 && (
-          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-light)', marginTop: '28px' }}>
-            Rankings update automatically as you study 📚
+          <p style={{ 
+            textAlign: 'center', 
+            fontSize: '0.8rem', 
+            color: 'var(--text-medium)', 
+            marginTop: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}>
+            <PencilIcon size={14} color="var(--text-medium)" />
+            Rankings update automatically as you study 
           </p>
         )}
       </div>
-    </>
+    </div>
   );
 }
