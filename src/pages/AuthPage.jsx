@@ -2,26 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 import Flashcard from '../components/Flashcard';
-import { SaveIcon } from '../components/DoodleIcons';
+import { WarningIcon } from '../components/DoodleIcons';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const { user, login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [errorPopup, setErrorPopup] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      navigate('/select');
-    }
+    if (user) navigate('/select');
   }, [user, navigate]);
 
   const handleChange = (e) => {
@@ -30,11 +23,11 @@ export default function AuthPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrorPopup('');
     setLoading(true);
 
     const endpoint = isLogin ? '/api/login' : '/api/signup';
-    const payload = isLogin 
+    const payload = isLogin
       ? { email: formData.email, password: formData.password }
       : formData;
 
@@ -42,25 +35,21 @@ export default function AuthPage() {
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
-      }
+      if (!response.ok) throw new Error(data.error || 'Something went wrong');
 
-      // Use context login (which also handles localStorage)
       login(data.user);
       navigate('/select');
     } catch (err) {
-      let errorMsg = err.message;
-      if (errorMsg === 'Failed to fetch' || errorMsg === 'Load failed' || errorMsg.includes('NetworkError')) {
-        errorMsg = "Oops! Our servers are taking a little nap right now 😴 Please try again!";
-      } else if (errorMsg.includes('Invalid email')) {
-        errorMsg = "Hmm... that email or password doesn't match our records 🧸";
+      let msg = err.message;
+      // Only translate low-level network errors — all API errors show as-is
+      if (msg === 'Failed to fetch' || msg === 'Load failed' || msg.includes('NetworkError')) {
+        msg = "Can't reach the server right now. Please check your connection and try again.";
       }
-      setError(errorMsg);
+      setErrorPopup(msg);
     } finally {
       setLoading(false);
     }
@@ -78,63 +67,20 @@ export default function AuthPage() {
           {!isLogin && (
             <div className="input-group">
               <label className="input-label">Full Name</label>
-              <input
-                className="styled-input"
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                placeholder="Sofia Regular"
-              />
+              <input className="styled-input" type="text" name="name" value={formData.name}
+                onChange={handleChange} required placeholder="Your name" />
             </div>
           )}
           <div className="input-group">
             <label className="input-label">Email Address</label>
-            <input
-              className="styled-input"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="hello@example.com"
-            />
+            <input className="styled-input" type="email" name="email" value={formData.email}
+              onChange={handleChange} required placeholder="hello@example.com" />
           </div>
           <div className="input-group">
             <label className="input-label">Password</label>
-            <input
-              className="styled-input"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="••••••••"
-            />
+            <input className="styled-input" type="password" name="password" value={formData.password}
+              onChange={handleChange} required placeholder="••••••••" />
           </div>
-
-          {error && (
-            <div style={{ 
-              background: 'rgba(255, 107, 107, 0.08)', 
-              border: '1.5px solid rgba(255, 107, 107, 0.3)',
-              borderRadius: '12px',
-              padding: '10px 14px',
-              color: '#ff6b6b', 
-              fontSize: '0.85rem', 
-              marginBottom: '16px', 
-              textAlign: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              fontWeight: 600,
-              fontFamily: 'Nunito, sans-serif'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🥺</span> 
-              <span>{error}</span>
-            </div>
-          )}
 
           <button className="btn-primary" type="submit" style={{ width: '100%' }} disabled={loading}>
             {loading ? 'Processing...' : (isLogin ? 'Login' : 'Signup')}
@@ -143,14 +89,28 @@ export default function AuthPage() {
 
         <p style={{ marginTop: '20px', fontSize: '0.9rem', color: 'var(--text-medium)' }}>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span 
-            onClick={() => setIsLogin(!isLogin)} 
-            style={{ color: 'var(--lavender)', cursor: 'pointer', fontWeight: 700 }}
-          >
+          <span onClick={() => setIsLogin(!isLogin)}
+            style={{ color: 'var(--lavender)', cursor: 'pointer', fontWeight: 700 }}>
             {isLogin ? 'Signup' : 'Login'}
           </span>
         </p>
       </div>
+
+      {/* Error Popup */}
+      {errorPopup && (
+        <div className="error-popup-overlay" onClick={() => setErrorPopup('')}>
+          <div className="error-popup-box" onClick={e => e.stopPropagation()}>
+            <div className="error-popup-icon">
+              <WarningIcon size={26} color="#ff6b6b" />
+            </div>
+            <p className="error-popup-title">Oops, something went wrong</p>
+            <p className="error-popup-msg">{errorPopup}</p>
+            <button className="error-popup-btn" onClick={() => setErrorPopup('')}>
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </Flashcard>
   );
 }

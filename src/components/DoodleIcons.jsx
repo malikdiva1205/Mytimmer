@@ -268,6 +268,16 @@ export function CheckIcon({ size = 18, color, style }) {
     </svg>
   );
 }
+export function WarningIcon({ size = 18, color, style }) {
+  return (
+    <svg {...base(size, null, style)} stroke={color || 'currentColor'}>
+      <path d="M12 8v5" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="16.5" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M12 3l9.5 17h-19L12 3z" strokeWidth="2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function CoffeeIcon({ size = 18, color, style }) {
   return (
     <svg {...base(size, null, style)} stroke={color || 'currentColor'}>
