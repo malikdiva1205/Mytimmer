@@ -54,7 +54,13 @@ export default function AuthPage() {
       login(data.user);
       navigate('/select');
     } catch (err) {
-      setError(err.message);
+      let errorMsg = err.message;
+      if (errorMsg === 'Failed to fetch' || errorMsg === 'Load failed' || errorMsg.includes('NetworkError')) {
+        errorMsg = "Oops! Our servers are taking a little nap right now 😴 Please try again!";
+      } else if (errorMsg.includes('Invalid email')) {
+        errorMsg = "Hmm... that email or password doesn't match our records 🧸";
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -109,9 +115,25 @@ export default function AuthPage() {
           </div>
 
           {error && (
-            <p style={{ color: '#ff6b6b', fontSize: '0.85rem', marginBottom: '16px', textAlign: 'center' }}>
-              {error}
-            </p>
+            <div style={{ 
+              background: 'rgba(255, 107, 107, 0.08)', 
+              border: '1.5px solid rgba(255, 107, 107, 0.3)',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              color: '#ff6b6b', 
+              fontSize: '0.85rem', 
+              marginBottom: '16px', 
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              fontWeight: 600,
+              fontFamily: 'Nunito, sans-serif'
+            }}>
+              <span style={{ fontSize: '1.1rem' }}>🥺</span> 
+              <span>{error}</span>
+            </div>
           )}
 
           <button className="btn-primary" type="submit" style={{ width: '100%' }} disabled={loading}>
