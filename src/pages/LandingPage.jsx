@@ -62,7 +62,7 @@ export default function LandingPage() {
         </div>
 
         <p style={{ marginTop: '24px', fontSize: '0.78rem', color: 'var(--text-light)' }}>
-          Focus · Breathe · Grow
+          Focus · Breathe · Grow · Happy
         </p>
       </div>
     </div>
