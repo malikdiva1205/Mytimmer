@@ -2,13 +2,43 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 import Flashcard from '../components/Flashcard';
-import { PomodoroIcon, PlayIcon, PauseIcon, ResetIcon, SaveIcon, CheckIcon } from '../components/DoodleIcons';
+import { PomodoroIcon, PlayIcon, PauseIcon, ResetIcon, SaveIcon, CheckIcon, VolumeOnIcon, VolumeOffIcon } from '../components/DoodleIcons';
 import { saveSession } from '../utils/storage';
 import { formatTime, todayStr } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
 
 const RING_R = 72;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R;
+
+let sharedAudioCtx = null;
+function initAudio() {
+  if (!sharedAudioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) sharedAudioCtx = new AudioContext();
+  }
+  if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume();
+  }
+}
+
+function playSoftChime() {
+  if (!sharedAudioCtx) return;
+  const osc = sharedAudioCtx.createOscillator();
+  const gain = sharedAudioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(sharedAudioCtx.destination);
+  
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, sharedAudioCtx.currentTime); // A5
+  osc.frequency.setValueAtTime(1318.51, sharedAudioCtx.currentTime + 0.15); // E6
+  
+  gain.gain.setValueAtTime(0, sharedAudioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.3, sharedAudioCtx.currentTime + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.001, sharedAudioCtx.currentTime + 1.2);
+  
+  osc.start(sharedAudioCtx.currentTime);
+  osc.stop(sharedAudioCtx.currentTime + 1.2);
+}
 
 export default function PomodoroPage() {
   const navigate = useNavigate();
@@ -19,8 +49,14 @@ export default function PomodoroPage() {
   const [status, setStatus] = useState('idle');
   const [saved, setSaved] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
+  const soundEnabledRef = useRef(soundEnabled);
+
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
 
   const handleInputChange = (e) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -28,6 +64,7 @@ export default function PomodoroPage() {
   };
 
   const handleStart = () => {
+    initAudio(); // Warm up audio context on user gesture
     const mins = parseInt(input, 10);
     if (!mins || mins <= 0) return;
     const secs = mins * 60;
@@ -55,6 +92,7 @@ export default function PomodoroPage() {
   };
 
   const handleResume = () => {
+    initAudio();
     setStatus('running');
     intervalRef.current = setInterval(() => {
       setRemaining(prev => {
@@ -124,7 +162,10 @@ export default function PomodoroPage() {
   };
 
   useEffect(() => {
-    if (status === 'done') triggerToast("Time's up! Great work");
+    if (status === 'done') {
+      if (soundEnabledRef.current) playSoftChime();
+      triggerToast("Session Complete! Great work 🌸");
+    }
   }, [status]);
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
@@ -199,6 +240,27 @@ export default function PomodoroPage() {
             </div>
           </>
         )}
+
+        {/* Sound Toggle (visible in all states) */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+          <button 
+            onClick={() => {
+              initAudio(); // Initialize on click just in case
+              setSoundEnabled(!soundEnabled);
+            }}
+            style={{ 
+              background: 'transparent', border: '1px solid rgba(197,184,232,0.4)',
+              borderRadius: '50px', padding: '6px 14px', 
+              fontSize: '0.8rem', color: 'var(--text-medium)',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              cursor: 'pointer', transition: 'all 0.2s',
+              fontFamily: 'Nunito, sans-serif'
+            }}
+          >
+            {soundEnabled ? <VolumeOnIcon size={14} color="#8cc0a8" /> : <VolumeOffIcon size={14} color="#ff6b6b" />}
+            {soundEnabled ? 'Sound On' : 'Sound Off'}
+          </button>
+        </div>
 
         <div className="btn-row">
           {status === 'idle' && (
