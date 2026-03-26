@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 import WaveBackground from '../components/WaveBackground';
 import {
   SunIcon, CalendarIcon, TrophyIcon, TargetIcon,
@@ -68,7 +69,7 @@ export default function DashboardPage() {
     let sourceSessions = [];
     if (user) {
       try {
-        const res = await fetch(`http://localhost:5001/api/sessions/${user.id}`);
+        const res = await fetch(`${API_BASE}/api/sessions/${user.id}`);
         if (res.ok) {
           sourceSessions = await res.json();
         } else {
@@ -111,7 +112,7 @@ export default function DashboardPage() {
       
       if (user) {
         try {
-          await fetch(`http://localhost:5001/api/users/${user.id}/study_hours`, {
+          await fetch(`${API_BASE}/api/users/${user.id}/study_hours`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ study_hours: val })

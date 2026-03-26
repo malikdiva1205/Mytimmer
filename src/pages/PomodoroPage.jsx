@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 import Flashcard from '../components/Flashcard';
 import { PomodoroIcon, PlayIcon, PauseIcon, ResetIcon, SaveIcon, CheckIcon } from '../components/DoodleIcons';
 import { saveSession } from '../utils/storage';
@@ -95,7 +96,7 @@ export default function PomodoroPage() {
 
     if (user) {
       try {
-        await fetch('http://localhost:5001/api/sessions', {
+        await fetch(`${API_BASE}/api/sessions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
