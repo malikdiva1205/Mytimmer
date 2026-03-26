@@ -143,6 +143,26 @@ app.post('/api/sessions', async (req, res) => {
   }
 });
 
+// GET /api/leaderboard
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT u.id, u.name,
+             COALESCE(SUM(s.duration), 0) AS total_time,
+             COUNT(s.id) AS session_count
+      FROM users u
+      LEFT JOIN sessions s ON u.id = s.user_id
+      GROUP BY u.id, u.name
+      HAVING COALESCE(SUM(s.duration), 0) > 0
+      ORDER BY total_time DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching leaderboard:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/sessions/:userId
 app.get('/api/sessions/:userId', async (req, res) => {
   const { userId } = req.params;

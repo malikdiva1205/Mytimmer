@@ -9,6 +9,7 @@ import PomodoroPage from './pages/PomodoroPage';
 import DashboardPage from './pages/DashboardPage';
 import CalendarPage from './pages/CalendarPage';
 import AuthPage from './pages/AuthPage';
+import LeaderboardPage from './pages/LeaderboardPage';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ThemeToggle from './components/ThemeToggle';
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/pomodoro" element={<ProtectedRoute><PomodoroPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+            <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
             
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -285,7 +285,7 @@ export default function DashboardPage() {
             <button className="quick-btn" onClick={() => navigate('/calendar')}>
               <CalendarIcon size={16} /> View Calendar
             </button>
-            <button className="quick-btn" onClick={() => alert('Leaderboard coming soon!')}>
+            <button className="quick-btn" onClick={() => navigate('/leaderboard')}>
               <TrophyIcon size={16} color="var(--text-medium)" /> Leaderboard
             </button>
             <button className="quick-btn" onClick={() => navigate('/')}>
