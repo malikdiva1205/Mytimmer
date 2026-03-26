@@ -19,6 +19,16 @@ function initAudio() {
   if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
     sharedAudioCtx.resume();
   }
+  // Play silent sound to unlock iOS Web Audio
+  try {
+    const osc = sharedAudioCtx.createOscillator();
+    const gain = sharedAudioCtx.createGain();
+    gain.gain.value = 0;
+    osc.connect(gain);
+    gain.connect(sharedAudioCtx.destination);
+    osc.start(sharedAudioCtx.currentTime);
+    osc.stop(sharedAudioCtx.currentTime + 0.01);
+  } catch(e) {}
 }
 
 function playSoftChime() {
@@ -28,12 +38,13 @@ function playSoftChime() {
   osc.connect(gain);
   gain.connect(sharedAudioCtx.destination);
   
-  osc.type = 'sine';
+  // Triangle wave is easier to hear on phone/laptop speakers
+  osc.type = 'triangle';
   osc.frequency.setValueAtTime(880, sharedAudioCtx.currentTime); // A5
   osc.frequency.setValueAtTime(1318.51, sharedAudioCtx.currentTime + 0.15); // E6
   
   gain.gain.setValueAtTime(0, sharedAudioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(0.3, sharedAudioCtx.currentTime + 0.05);
+  gain.gain.linearRampToValueAtTime(1, sharedAudioCtx.currentTime + 0.05);
   gain.gain.exponentialRampToValueAtTime(0.001, sharedAudioCtx.currentTime + 1.2);
   
   osc.start(sharedAudioCtx.currentTime);
