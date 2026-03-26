@@ -1,5 +1,6 @@
 // Storage keys
 const SESSIONS_KEY = 'study_sessions';
+import { todayStr } from './dateUtils';
 
 // Get all sessions
 export function getSessions() {
@@ -34,8 +35,7 @@ export function getSessionsByDate(date) {
 
 // Get sessions for today
 export function getTodaySessions() {
-  const today = new Date().toISOString().split('T')[0];
-  return getSessionsByDate(today);
+  return getSessionsByDate(todayStr());
 }
 
 // Get sessions for the current week (Mon-Sun)

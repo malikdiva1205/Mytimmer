@@ -1,6 +1,14 @@
-// Get today's date as YYYY-MM-DD
+// Convert any Date to local YYYY-MM-DD string (not UTC)
+export function localDateStr(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+// Get today's date as YYYY-MM-DD (local time, not UTC)
 export function todayStr() {
-  return new Date().toISOString().split('T')[0];
+  return localDateStr(new Date());
 }
 
 // Format a YYYY-MM-DD string to a readable date

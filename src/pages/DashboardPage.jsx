@@ -13,7 +13,8 @@ import {
   totalDuration,
   formatDuration,
 } from '../utils/storage';
-import { formatDateLabel } from '../utils/dateUtils';
+import { formatDateLabel, localDateStr } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const GOAL_KEY = 'study_daily_goal_hours';
@@ -24,16 +25,14 @@ function badgeClass(type) {
   return t.includes('stopwatch') ? 'badge-stopwatch' : t.includes('pomodoro') ? 'badge-pomodoro' : 'badge-clock';
 }
 
-function getWeekDayData() {
-  const sessions = getSessions();
+function getWeekDayData(sessions = []) {
   const now = new Date();
   const day = now.getDay();
   return DAYS.map((label, i) => {
     const diff = i - day;
     const d = new Date(now);
     d.setDate(now.getDate() + diff);
-    d.setHours(0, 0, 0, 0);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = localDateStr(d);  // local date, not UTC
     const daySessions = sessions.filter(s => s.date === dateStr);
     return { label, seconds: totalDuration(daySessions), isToday: i === day };
   });
@@ -41,23 +40,59 @@ function getWeekDayData() {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user, logout, updateUser } = useAuth();
   const [todaySessions, setTodaySessions] = useState([]);
   const [weekSessions, setWeekSessions] = useState([]);
   const [allSessions, setAllSessions] = useState([]);
   const [weekDays, setWeekDays] = useState([]);
 
   const [goalHours, setGoalHours] = useState(() => {
+    if (user && user.study_hours > 0) {
+      return user.study_hours;
+    }
     const saved = localStorage.getItem(GOAL_KEY);
     return saved ? parseFloat(saved) : 2;
   });
+  
+  // Sync goal check on user load
+  useEffect(() => {
+    if (user && user.study_hours > 0 && user.study_hours !== goalHours) {
+      setGoalHours(user.study_hours);
+    }
+  }, [user]);
+
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
 
-  const refresh = () => {
-    setTodaySessions(getTodaySessions());
-    setWeekSessions(getWeekSessions());
-    setAllSessions(getSessions().reverse().slice(0, 8));
-    setWeekDays(getWeekDayData());
+  const refresh = async () => {
+    let sourceSessions = [];
+    if (user) {
+      try {
+        const res = await fetch(`http://localhost:5001/api/sessions/${user.id}`);
+        if (res.ok) {
+          sourceSessions = await res.json();
+        } else {
+          sourceSessions = getSessions().slice().reverse();
+        }
+      } catch (err) {
+        sourceSessions = getSessions().slice().reverse();
+      }
+    } else {
+      sourceSessions = getSessions().slice().reverse();
+    }
+
+    const todayStr = localDateStr(new Date());  // local date, not UTC
+    const now = new Date();
+    const day = now.getDay();
+    const diffToMon = (day === 0 ? -6 : 1 - day);
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diffToMon);
+    monday.setHours(0, 0, 0, 0);
+
+    setTodaySessions(sourceSessions.filter(s => s.date === todayStr));
+    setWeekSessions(sourceSessions.filter(s => new Date(s.date) >= monday));
+    setAllSessions(sourceSessions.slice(0, 8));
+    setWeekDays(getWeekDayData(sourceSessions));
   };
 
   useEffect(() => {
@@ -65,13 +100,27 @@ export default function DashboardPage() {
     const handler = () => refresh();
     window.addEventListener('focus', handler);
     return () => window.removeEventListener('focus', handler);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
-  const saveGoal = () => {
+  const saveGoal = async () => {
     const val = parseFloat(goalInput);
     if (!isNaN(val) && val > 0 && val <= 24) {
       setGoalHours(val);
       localStorage.setItem(GOAL_KEY, String(val));
+      
+      if (user) {
+        try {
+          await fetch(`http://localhost:5001/api/users/${user.id}/study_hours`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ study_hours: val })
+          });
+          updateUser({ study_hours: val });
+        } catch (err) {
+          console.error("Failed to save goal to DB", err);
+        }
+      }
     }
     setEditingGoal(false);
   };
@@ -87,13 +136,23 @@ export default function DashboardPage() {
       <WaveBackground />
       <div className="dashboard-layout">
         {/* Header */}
-        <div className="dashboard-header">
+        <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 className="dashboard-title">My Dashboard</h1>
+            <h1 className="dashboard-title">Welcome, {user?.name || 'Student'}!</h1>
             <p className="dashboard-subtitle">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>
+          <button 
+            className="btn-secondary" 
+            style={{ padding: '8px 16px', fontSize: '0.9rem', borderColor: '#ff6b6b', color: '#ff6b6b' }}
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+          >
+            Logout
+          </button>
         </div>
 
         {/* Stats */}
@@ -110,7 +169,7 @@ export default function DashboardPage() {
           </div>
           <div className="stat-card">
             <span className="stat-icon"><TrophyIcon size={22} color="#9a8040" /></span>
-            <div className="stat-value">{getSessions().length}</div>
+            <div className="stat-value">{allSessions.length > 8 ? allSessions.length : allSessions.length}</div>
             <div className="stat-label">Sessions</div>
           </div>
         </div>
@@ -224,6 +283,9 @@ export default function DashboardPage() {
             </button>
             <button className="quick-btn" onClick={() => navigate('/calendar')}>
               <CalendarIcon size={16} /> View Calendar
+            </button>
+            <button className="quick-btn" onClick={() => alert('Leaderboard coming soon!')}>
+              <TrophyIcon size={16} color="var(--text-medium)" /> Leaderboard
             </button>
             <button className="quick-btn" onClick={() => navigate('/')}>
               <HomeIcon size={16} /> Home

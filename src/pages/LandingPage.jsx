@@ -1,9 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookIcon, ArrowRightIcon, DashboardIcon } from '../components/DoodleIcons';
+import { useAuth } from '../context/AuthContext';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="flashcard-overlay">
@@ -44,7 +46,7 @@ export default function LandingPage() {
           <button
             className="btn-primary"
             style={{ width: '100%', maxWidth: '280px', padding: '16px 36px', fontSize: '1.05rem' }}
-            onClick={() => navigate('/select')}
+            onClick={() => user ? navigate('/select') : navigate('/auth')}
           >
             Start a Session
             <ArrowRightIcon size={16} color="white" />
@@ -52,7 +54,7 @@ export default function LandingPage() {
           <button
             className="btn-secondary"
             style={{ width: '100%', maxWidth: '280px' }}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => user ? navigate('/dashboard') : navigate('/auth')}
           >
             <DashboardIcon size={16} />
             View Dashboard

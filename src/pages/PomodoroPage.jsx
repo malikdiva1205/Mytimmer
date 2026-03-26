@@ -4,12 +4,14 @@ import Flashcard from '../components/Flashcard';
 import { PomodoroIcon, PlayIcon, PauseIcon, ResetIcon, SaveIcon, CheckIcon } from '../components/DoodleIcons';
 import { saveSession } from '../utils/storage';
 import { formatTime, todayStr } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
 
 const RING_R = 72;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R;
 
 export default function PomodoroPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [input, setInput] = useState('25');
   const [totalSeconds, setTotalSeconds] = useState(25 * 60);
   const [remaining, setRemaining] = useState(25 * 60);
@@ -72,7 +74,7 @@ export default function PomodoroPage() {
     setSaved(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const spent = totalSeconds - remaining;
     if (spent <= 0) return;
 
@@ -82,13 +84,31 @@ export default function PomodoroPage() {
     }
 
     const now = new Date();
-    saveSession({
+    const sessionData = {
       type: 'Pomodoro',
       duration: spent,
       startTime: startTimeRef.current?.toISOString() || now.toISOString(),
       endTime: now.toISOString(),
       date: todayStr(),
-    });
+    };
+    saveSession(sessionData);
+
+    if (user) {
+      try {
+        await fetch('http://localhost:5001/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id,
+            type: sessionData.type,
+            duration: sessionData.duration,
+            date: sessionData.date
+          })
+        });
+      } catch (err) {
+        console.error('Failed to save to DB', err);
+      }
+    }
 
     // Reset to idle
     setStatus('idle');

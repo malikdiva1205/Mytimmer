@@ -4,9 +4,11 @@ import Flashcard from '../components/Flashcard';
 import { StopwatchIcon, PlayIcon, PauseIcon, ResetIcon, SaveIcon, CheckIcon } from '../components/DoodleIcons';
 import { saveSession } from '../utils/storage';
 import { formatTime, todayStr } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
 
 export default function StopwatchPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [elapsed, setElapsed] = useState(0);
   const [status, setStatus] = useState('idle');
   const [saved, setSaved] = useState(false);
@@ -40,7 +42,7 @@ export default function StopwatchPage() {
     setSaved(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (elapsed === 0) return;
     
     // Stop if running
@@ -49,13 +51,31 @@ export default function StopwatchPage() {
     }
 
     const now = new Date();
-    saveSession({
+    const sessionData = {
       type: 'Stopwatch',
       duration: elapsed,
       startTime: new Date(now.getTime() - elapsed * 1000).toISOString(),
       endTime: now.toISOString(),
       date: todayStr(),
-    });
+    };
+    saveSession(sessionData);
+
+    if (user) {
+      try {
+        await fetch('http://localhost:5001/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id,
+            type: sessionData.type,
+            duration: sessionData.duration,
+            date: sessionData.date
+          })
+        });
+      } catch (err) {
+        console.error('Failed to save to DB', err);
+      }
+    }
 
     // Reset everything
     accumulatedRef.current = 0;
