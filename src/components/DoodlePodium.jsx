@@ -10,76 +10,90 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-// Cute blob character — snowman-style (big round head + small round body + arm & feet bumps)
-function BlobChar({ cx, topY, fill, stroke, pose = 'second' }) {
-  const headR = 17;
-  const bodyR = 13;
-  const hcy = topY + headR;                       // head center y
-  const bcy = hcy + headR + bodyR - 4;            // body center y (slight overlap)
+const starPath = (x, y, s) =>
+  `M ${x},${y - s} L ${x + s * 0.22},${y - s * 0.22} L ${x + s},${y} L ${x + s * 0.22},${y + s * 0.22} L ${x},${y + s} L ${x - s * 0.22},${y + s * 0.22} L ${x - s},${y} L ${x - s * 0.22},${y - s * 0.22} Z`;
 
-  // Arm ellipse centres (beside the body)
-  const lax = cx - bodyR - 8;
-  const rax = cx + bodyR + 8;
-  const aY  = bcy - bodyR * 0.25;
+function DoodleChar({ cx, topY, fill, stroke, pose }) {
+  const headR = 22;
+  const bodyRx = 16;
+  const bodyRy = 19;
+  const hcy = topY + headR;
+  const bcy = hcy + headR + bodyRy - 7;
 
-  // Arm tilt angles per pose
-  const tiltL = { winner: -60, second: -28, third: -20 };
-  const tiltR = { winner:  60, second:  18, third:  48 };
+  const aLx = cx - bodyRx;
+  const aRx = cx + bodyRx;
+  const aY  = bcy - bodyRy * 0.4;
 
-  // Mouth width / drop
-  const mW   = pose === 'winner' ? 9  : 6;
-  const mDrop = pose === 'winner' ? 8  : 4;
-  const mY   = hcy + 5;
+  const arms = {
+    winner: {
+      L: `M ${aLx},${aY} Q ${cx - 36},${aY - 18} ${cx - 42},${hcy - 8}`,
+      R: `M ${aRx},${aY} Q ${cx + 36},${aY - 18} ${cx + 42},${hcy - 8}`,
+    },
+    second: {
+      L: `M ${aLx},${aY + 4} Q ${cx - 34},${aY + 12} ${cx - 40},${aY + 18}`,
+      R: `M ${aRx},${aY - 2} Q ${cx + 31},${aY - 18} ${cx + 36},${hcy + 6}`,
+    },
+    third: {
+      L: `M ${aLx},${aY + 4} Q ${cx - 34},${aY + 12} ${cx - 40},${aY + 18}`,
+      R: `M ${aRx},${aY - 2} Q ${cx + 33},${aY - 20} ${cx + 37},${hcy - 2}`,
+    },
+  };
 
-  // Feet ellipse centres
-  const lfx = cx - 7;
-  const rfx = cx + 7;
-  const fy  = bcy + bodyR + 6;
+  const legBot = bcy + bodyRy + 16;
+  const neckY  = hcy + headR - 2;
+  const medalY = neckY + 16;
+  const mouthY = hcy + 6;
+  const isWinner = pose === 'winner';
 
   return (
-    <g>
-      {/* ── Arms ── */}
-      <ellipse cx={lax} cy={aY} rx={9} ry={5}
-        fill={fill} stroke={stroke} strokeWidth="1.8"
-        transform={`rotate(${tiltL[pose]},${lax},${aY})`} />
-      <ellipse cx={rax} cy={aY} rx={9} ry={5}
-        fill={fill} stroke={stroke} strokeWidth="1.8"
-        transform={`rotate(${tiltR[pose]},${rax},${aY})`} />
+    <g strokeLinecap="round" strokeLinejoin="round">
+      {/* Arms */}
+      <path d={arms[pose].L} fill="none" stroke={stroke} strokeWidth="3" />
+      <path d={arms[pose].R} fill="none" stroke={stroke} strokeWidth="3" />
 
-      {/* ── Body ── */}
-      <circle cx={cx} cy={bcy} r={bodyR} fill={fill} stroke={stroke} strokeWidth="2" />
+      {/* Body */}
+      <ellipse cx={cx} cy={bcy} rx={bodyRx} ry={bodyRy} fill={fill} stroke={stroke} strokeWidth="2.5" />
 
-      {/* ── Head ── */}
-      <circle cx={cx} cy={hcy} r={headR} fill={fill} stroke={stroke} strokeWidth="2" />
+      {/* Head */}
+      <circle cx={cx} cy={hcy} r={headR} fill={fill} stroke={stroke} strokeWidth="2.5" />
 
-      {/* ── Eyes ── */}
-      <circle cx={cx - 5} cy={hcy - 4} r="2.5" fill={stroke} />
-      <circle cx={cx + 5} cy={hcy - 4} r="2.5" fill={stroke} />
-      {/* eye shine */}
-      <circle cx={cx - 3.8} cy={hcy - 5.5} r="1" fill="rgba(255,255,255,0.85)" />
-      <circle cx={cx + 6.2} cy={hcy - 5.5} r="1" fill="rgba(255,255,255,0.85)" />
+      {/* Blush */}
+      <circle cx={cx - 13} cy={hcy + 5} r="5" fill={stroke} fillOpacity="0.2" stroke="none" />
+      <circle cx={cx + 13} cy={hcy + 5} r="5" fill={stroke} fillOpacity="0.2" stroke="none" />
 
-      {/* ── Mouth ── */}
-      <path
-        d={`M ${cx - mW} ${mY} Q ${cx} ${mY + mDrop} ${cx + mW} ${mY}`}
-        fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round"
-      />
+      {/* Eyes */}
+      <circle cx={cx - 7} cy={hcy - 4} r="2.8" fill={stroke} stroke="none" />
+      <circle cx={cx + 7} cy={hcy - 4} r="2.8" fill={stroke} stroke="none" />
+      <circle cx={cx - 5.5} cy={hcy - 5.5} r="1.1" fill="white" stroke="none" />
+      <circle cx={cx + 8.5} cy={hcy - 5.5} r="1.1" fill="white" stroke="none" />
 
-      {/* ── Feet ── */}
-      <ellipse cx={lfx} cy={fy} rx={5.5} ry={4} fill={fill} stroke={stroke} strokeWidth="1.8" />
-      <ellipse cx={rfx} cy={fy} rx={5.5} ry={4} fill={fill} stroke={stroke} strokeWidth="1.8" />
-
-      {/* ── Winner sparkles ── */}
-      {pose === 'winner' && (
-        <>
-          <path
-            d={`M ${cx+26} ${hcy-24} l 3.8,-8.5 l 3.8,8.5 l 8.5,3.8 l -8.5,3.8 l -3.8,8.5 l -3.8,-8.5 l -8.5,-3.8 Z`}
-            fill={stroke} fillOpacity="0.65" stroke="none" />
-          <path
-            d={`M ${cx-26} ${hcy-18} l 2.5,-5.5 l 2.5,5.5 l 5.5,2.5 l -5.5,2.5 l -2.5,5.5 l -2.5,-5.5 l -5.5,-2.5 Z`}
-            fill={stroke} fillOpacity="0.45" stroke="none" />
-        </>
+      {/* Mouth */}
+      {isWinner ? (
+        <path d={`M ${cx - 9},${mouthY} Q ${cx},${mouthY + 13} ${cx + 9},${mouthY} Z`}
+          fill={stroke} stroke="none" />
+      ) : (
+        <path d={`M ${cx - 6},${mouthY} L ${cx},${mouthY + 9} L ${cx + 6},${mouthY}`}
+          fill="none" stroke={stroke} strokeWidth="2.2" />
       )}
+
+      {/* Medal lanyard */}
+      <path d={`M ${cx - 5},${neckY} L ${cx},${medalY} M ${cx + 5},${neckY} L ${cx},${medalY}`}
+        fill="none" stroke={stroke} strokeWidth="2" />
+      {/* Medal disk */}
+      <circle cx={cx} cy={medalY + 7} r="7.5" fill={fill} stroke={stroke} strokeWidth="2.2" />
+      <circle cx={cx} cy={medalY + 7} r="4"   fill={stroke} fillOpacity="0.3" stroke="none" />
+
+      {/* Legs */}
+      <path d={`M ${cx - 6},${bcy + bodyRy - 2} L ${cx - 9},${legBot}`}
+        fill="none" stroke={stroke} strokeWidth="3" />
+      <path d={`M ${cx + 6},${bcy + bodyRy - 2} L ${cx + 9},${legBot}`}
+        fill="none" stroke={stroke} strokeWidth="3" />
+
+      {/* Winner sparkles */}
+      {isWinner && <>
+        <path d={starPath(cx + 31, hcy - 24, 8)} fill={stroke} fillOpacity="0.65" stroke="none" />
+        <path d={starPath(cx - 28, hcy - 17, 5.5)} fill={stroke} fillOpacity="0.45" stroke="none" />
+      </>}
     </g>
   );
 }
@@ -87,29 +101,27 @@ function BlobChar({ cx, topY, fill, stroke, pose = 'second' }) {
 export default function DoodlePodium({ top3 = [] }) {
   const [first, second, third] = top3;
 
-  // Pastel palette — no gold/silver/bronze
-  const LAV  = { fill: '#ddd6f8', stroke: '#9180c8', light: 'rgba(197,184,232,0.22)' };
-  const PEACH = { fill: '#fde0c8', stroke: '#d4895a', light: 'rgba(247,197,160,0.22)' };
-  const SAGE  = { fill: '#cde9df', stroke: '#5faa8a', light: 'rgba(181,213,197,0.22)' };
+  const LAV   = { fill: '#ede8fb', stroke: '#a090d8' };
+  const PEACH = { fill: '#fdeede', stroke: '#e0955a' };
+  const MINT  = { fill: '#e4f5ed', stroke: '#5faa86' };
 
-  const GROUND = 265;
+  const GROUND = 268;
   const BLOCK = {
-    first:  { x: 155, w: 130, h: 110, col: LAV   },
-    second: { x:  38, w: 112, h:  80, col: PEACH  },
-    third:  { x: 292, w: 112, h:  60, col: SAGE   },
+    first:  { x: 152, w: 132, h: 112, c: LAV   },
+    second: { x:  36, w: 112, h:  80, c: PEACH  },
+    third:  { x: 292, w: 112, h:  60, c: MINT   },
   };
 
-  // Character top-y so feet sit just on the block top
-  // blob total height ≈ 17 + (17+13-4) + (13+6+4) = 66px
-  const BLOB_H = 64;
-  const gap    =  2; // slight float above block
+  // char height ≈ headR + (headR+bodyRy-7) + bodyRy + 16 = 22+35+19+16 = 92
+  const CHAR_H = 92;
+  const PAD    = 6; // legs overlap into block
 
   const topY = {
-    first:  GROUND - BLOCK.first.h  - BLOB_H - gap,
-    second: GROUND - BLOCK.second.h - BLOB_H - gap,
-    third:  GROUND - BLOCK.third.h  - BLOB_H - gap,
+    first:  GROUND - BLOCK.first.h  - CHAR_H + PAD,
+    second: GROUND - BLOCK.second.h - CHAR_H + PAD,
+    third:  GROUND - BLOCK.third.h  - CHAR_H + PAD,
   };
-  const cx = {
+  const charCX = {
     first:  BLOCK.first.x  + BLOCK.first.w  / 2,
     second: BLOCK.second.x + BLOCK.second.w / 2,
     third:  BLOCK.third.x  + BLOCK.third.w  / 2,
@@ -117,98 +129,76 @@ export default function DoodlePodium({ top3 = [] }) {
 
   return (
     <div style={{ width: '100%', maxWidth: 480, margin: '0 auto' }}>
-      <svg
-        viewBox="0 0 440 300"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ width: '100%', height: 'auto', display: 'block' }}
-      >
-        {/* ── Podium blocks ── */}
+      <svg viewBox="0 0 440 298" fill="none" xmlns="http://www.w3.org/2000/svg"
+        style={{ width: '100%', height: 'auto', display: 'block' }}>
+
         {/* 2nd – peach */}
-        <rect
-          x={BLOCK.second.x} y={GROUND - BLOCK.second.h}
-          width={BLOCK.second.w} height={BLOCK.second.h}
-          rx="12" fill={PEACH.light} stroke={PEACH.stroke} strokeWidth="2"
-        />
-        <text x={BLOCK.second.x + BLOCK.second.w / 2} y={GROUND - 10}
+        <rect x={BLOCK.second.x} y={GROUND - BLOCK.second.h}
+          width={BLOCK.second.w} height={BLOCK.second.h} rx="12"
+          fill="rgba(224,149,90,0.12)" stroke={PEACH.stroke} strokeWidth="2.2" />
+        <text x={BLOCK.second.x + BLOCK.second.w / 2} y={GROUND - 9}
           textAnchor="middle" fill={PEACH.stroke}
-          fontFamily="Sofia, cursive" fontSize="28" fontWeight="bold">2</text>
+          fontFamily="Sofia, cursive" fontSize="26" fontWeight="bold">2</text>
 
         {/* 1st – lavender */}
-        <rect
-          x={BLOCK.first.x} y={GROUND - BLOCK.first.h}
-          width={BLOCK.first.w} height={BLOCK.first.h}
-          rx="12" fill={LAV.light} stroke={LAV.stroke} strokeWidth="2"
-        />
-        <text x={BLOCK.first.x + BLOCK.first.w / 2} y={GROUND - 10}
+        <rect x={BLOCK.first.x} y={GROUND - BLOCK.first.h}
+          width={BLOCK.first.w} height={BLOCK.first.h} rx="12"
+          fill="rgba(160,144,216,0.12)" stroke={LAV.stroke} strokeWidth="2.2" />
+        <text x={BLOCK.first.x + BLOCK.first.w / 2} y={GROUND - 9}
           textAnchor="middle" fill={LAV.stroke}
-          fontFamily="Sofia, cursive" fontSize="28" fontWeight="bold">1</text>
+          fontFamily="Sofia, cursive" fontSize="26" fontWeight="bold">1</text>
 
-        {/* 3rd – sage */}
-        <rect
-          x={BLOCK.third.x} y={GROUND - BLOCK.third.h}
-          width={BLOCK.third.w} height={BLOCK.third.h}
-          rx="12" fill={SAGE.light} stroke={SAGE.stroke} strokeWidth="2"
-        />
-        <text x={BLOCK.third.x + BLOCK.third.w / 2} y={GROUND - 10}
-          textAnchor="middle" fill={SAGE.stroke}
-          fontFamily="Sofia, cursive" fontSize="28" fontWeight="bold">3</text>
+        {/* 3rd – mint */}
+        <rect x={BLOCK.third.x} y={GROUND - BLOCK.third.h}
+          width={BLOCK.third.w} height={BLOCK.third.h} rx="12"
+          fill="rgba(95,170,134,0.12)" stroke={MINT.stroke} strokeWidth="2.2" />
+        <text x={BLOCK.third.x + BLOCK.third.w / 2} y={GROUND - 9}
+          textAnchor="middle" fill={MINT.stroke}
+          fontFamily="Sofia, cursive" fontSize="26" fontWeight="bold">3</text>
 
-        {/* ── Ground dashed line ── */}
-        <line x1="18" y1={GROUND} x2="422" y2={GROUND}
-          stroke="rgba(197,184,232,0.5)" strokeWidth="2" strokeDasharray="6 5" />
+        {/* Ground line */}
+        <line x1="14" y1={GROUND} x2="426" y2={GROUND}
+          stroke="rgba(197,184,232,0.45)" strokeWidth="2" strokeDasharray="6 4" />
 
-        {/* ── Blob characters ── */}
-        {second && <BlobChar cx={cx.second} topY={topY.second} fill={PEACH.fill} stroke={PEACH.stroke} pose="second" />}
-        {first  && <BlobChar cx={cx.first}  topY={topY.first}  fill={LAV.fill}   stroke={LAV.stroke}   pose="winner" />}
-        {third  && <BlobChar cx={cx.third}  topY={topY.third}  fill={SAGE.fill}  stroke={SAGE.stroke}  pose="third"  />}
+        {/* Characters — draw second & third first so winner is on top */}
+        {second && <DoodleChar cx={charCX.second} topY={topY.second} fill={PEACH.fill} stroke={PEACH.stroke} pose="second" />}
+        {third  && <DoodleChar cx={charCX.third}  topY={topY.third}  fill={MINT.fill}  stroke={MINT.stroke}  pose="third"  />}
+        {first  && <DoodleChar cx={charCX.first}  topY={topY.first}  fill={LAV.fill}   stroke={LAV.stroke}   pose="winner" />}
       </svg>
 
-      {/* ── Name + time labels ── */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-        marginTop: '-2px', padding: '0 4px',
-      }}>
-        {/* 2nd */}
+      {/* Name + time labels */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '-2px', padding: '0 4px' }}>
         <div style={{ width: '28%', textAlign: 'center' }}>
-          {second ? (
-            <>
-              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {second.name.split(' ')[0]}
-              </div>
-              <div style={{ fontSize: '0.78rem', color: PEACH.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
-                {formatTime(second.total_time)}
-              </div>
-            </>
-          ) : <div style={{ height: 36 }} />}
+          {second ? <>
+            <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {second.name.split(' ')[0]}
+            </div>
+            <div style={{ fontSize: '0.76rem', color: PEACH.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+              {formatTime(second.total_time)}
+            </div>
+          </> : <div style={{ height: 36 }} />}
         </div>
 
-        {/* 1st */}
         <div style={{ width: '36%', textAlign: 'center' }}>
-          {first ? (
-            <>
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {first.name.split(' ')[0]}
-              </div>
-              <div style={{ fontSize: '0.86rem', color: LAV.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
-                {formatTime(first.total_time)}
-              </div>
-            </>
-          ) : <div style={{ height: 36 }} />}
+          {first ? <>
+            <div style={{ fontSize: '0.96rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {first.name.split(' ')[0]}
+            </div>
+            <div style={{ fontSize: '0.84rem', color: LAV.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+              {formatTime(first.total_time)}
+            </div>
+          </> : <div style={{ height: 36 }} />}
         </div>
 
-        {/* 3rd */}
         <div style={{ width: '28%', textAlign: 'center' }}>
-          {third ? (
-            <>
-              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {third.name.split(' ')[0]}
-              </div>
-              <div style={{ fontSize: '0.78rem', color: SAGE.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
-                {formatTime(third.total_time)}
-              </div>
-            </>
-          ) : <div style={{ height: 36 }} />}
+          {third ? <>
+            <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {third.name.split(' ')[0]}
+            </div>
+            <div style={{ fontSize: '0.76rem', color: MINT.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+              {formatTime(third.total_time)}
+            </div>
+          </> : <div style={{ height: 36 }} />}
         </div>
       </div>
     </div>
