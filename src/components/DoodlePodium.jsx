@@ -10,17 +10,40 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-// Sparkly hand-drawn star
+// Cluster of hand-drawn sparkles (4-pointed) matching the user reference
 function HandDrawnStar({ cx, cy, fill, size = 1 }) {
-  const s = size * 16;
-  const p1 = `M ${cx},${cy-s} Q ${cx+s*0.2},${cy-s*0.2} ${cx+s},${cy} Q ${cx+s*0.2},${cy+s*0.2} ${cx},${cy+s} Q ${cx-s*0.2},${cy+s*0.2} ${cx-s},${cy} Q ${cx-s*0.2},${cy-s*0.2} ${cx},${cy-s} Z`;
-  const p2 = `M ${cx},${cy-s-2} Q ${cx+s*0.25},${cy-s*0.25} ${cx+s+2},${cy} Q ${cx+s*0.25},${cy+s*0.25} ${cx},${cy+s+2} Q ${cx-s*0.25},${cy+s*0.25} ${cx-s-2},${cy} Q ${cx-s*0.25},${cy-s*0.25} ${cx},${cy-s-2} Z`;
-  
+  const Sparkle = ({ dx, dy, s }) => {
+    const x = cx + dx * size;
+    const y = cy + dy * size;
+    const h = 20 * s * size; // Vertical stretch
+    const w = 12 * s * size; // Horizontal width
+    const d = `M ${x},${y - h} Q ${x},${y} ${x + w},${y} Q ${x},${y} ${x},${y + h} Q ${x},${y} ${x - w},${y} Q ${x},${y} ${x},${y - h} Z`;
+    return <path d={d} fill={fill} stroke="#2d3748" strokeWidth="3" strokeLinejoin="round" />;
+  };
+
+  const Plus = ({ dx, dy, s }) => {
+    const x = cx + dx * size;
+    const y = cy + dy * size;
+    const len = 5 * s * size;
+    return (
+      <g stroke="#2d3748" strokeWidth="3" strokeLinecap="round">
+        <line x1={x} y1={y - len} x2={x} y2={y + len} />
+        <line x1={x - len} y1={y} x2={x + len} y2={y} />
+      </g>
+    );
+  };
+
   return (
     <g>
-      <path d={p1} fill={fill} stroke="#2d3748" strokeWidth="2.5" strokeLinejoin="round" />
-      <path d={p2} fill="none" stroke="#2d3748" strokeWidth="1" strokeLinejoin="round" opacity="0.6" />
-      <circle cx={cx} cy={cy} r={size*2} fill="#2d3748" />
+      {/* Top Left large sparkle */}
+      <Sparkle dx={-12} dy={-15} s={1.1} />
+      {/* Bottom Right medium sparkle */}
+      <Sparkle dx={18} dy={12} s={0.8} />
+      {/* Bottom tiny sparkle */}
+      <Sparkle dx={-2} dy={36} s={0.4} />
+      {/* Decorator plus signs */}
+      <Plus dx={25} dy={-25} s={1} />
+      <Plus dx={-25} dy={22} s={1.2} />
     </g>
   );
 }
