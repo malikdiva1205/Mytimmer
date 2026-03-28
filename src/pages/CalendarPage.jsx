@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WaveBackground from '../components/WaveBackground';
 import { CalendarIcon, DashboardIcon, BookIcon } from '../components/DoodleIcons';
-import { getSessions, getSessionsByDate, totalDuration, formatDuration } from '../utils/storage';
+import { totalDuration, formatDuration } from '../utils/storage';
 import { getDaysInMonth, getFirstDayOfMonth, monthName, formatDateLabel, todayStr } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config';
 
 function badgeClass(type) {
   const t = (type || '').toLowerCase();
@@ -12,15 +14,33 @@ function badgeClass(type) {
 
 export default function CalendarPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
   const [selected, setSelected] = useState(null);
+  const [sessions, setSessions] = useState([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/sessions/${user.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSessions(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch sessions:', err);
+      }
+    };
+    fetchSessions();
+  }, [user]);
 
   const activeDates = useMemo(() => {
-    const sessions = getSessions();
     return new Set(sessions.map(s => s.date));
-  }, []);
+  }, [sessions]);
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
@@ -42,7 +62,11 @@ export default function CalendarPage() {
     setSelected(dateStr === selected ? null : dateStr);
   };
 
-  const selectedSessions = selected ? getSessionsByDate(selected) : [];
+  const selectedSessions = useMemo(() => {
+    if (!selected) return [];
+    return sessions.filter(s => s.date === selected);
+  }, [selected, sessions]);
+  
   const selectedTotal = totalDuration(selectedSessions);
 
   const days = [];
@@ -153,7 +177,7 @@ export default function CalendarPage() {
                       <span className={`session-type-badge ${badgeClass(s.type)}`}>{s.type}</span>
                       <span className="session-time">{formatDuration(s.duration)}</span>
                       <span className="session-date" style={{ fontSize: '0.75rem' }}>
-                        {s.startTime ? new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                        {s.created_at ? new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (s.startTime ? new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')}
                       </span>
                     </div>
                   ))}

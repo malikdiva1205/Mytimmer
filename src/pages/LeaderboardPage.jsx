@@ -53,7 +53,7 @@ function savePodiumCache(entries) {
   localStorage.setItem(WEEKLY_CACHE_KEY, JSON.stringify({ weekKey: getWeekKey(), entries }));
 }
 
-const RANK_COLORS = ['#16aaa4', '#50c8c2', '#1c38c8'];
+const RANK_COLORS = ['#f1c40f', '#b8c2c6', '#d38c44'];
 
 export default function LeaderboardPage() {
   const navigate = useNavigate();
@@ -141,14 +141,14 @@ export default function LeaderboardPage() {
             {/* ── Weekly Podium ── */}
             <section>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
-                <TrophyIcon size={20} color="#16aaa4" />
+                <TrophyIcon size={20} color="#f1c40f" />
                 <h2 style={{ fontFamily: 'Sofia, cursive', fontSize: '1.6rem', color: 'var(--text-dark)', margin: 0 }}>
                   Weekly Podium
                 </h2>
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'rgba(22,170,164,0.1)', border: '1px solid rgba(22,170,164,0.25)', borderRadius: '50px', padding: '4px 14px', fontSize: '0.71rem', color: '#16aaa4', fontWeight: 600 }}>
-                  <ClockIcon size={11} color="#16aaa4" />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'rgba(241,196,15,0.1)', border: '1px solid rgba(241,196,15,0.25)', borderRadius: '50px', padding: '4px 14px', fontSize: '0.71rem', color: '#f1c40f', fontWeight: 600 }}>
+                  <ClockIcon size={11} color="#f1c40f" />
                   {timeUntilWeekEnd ? `Resets Sunday midnight · ${timeUntilWeekEnd}` : 'Resets Sunday midnight'}
                 </span>
               </div>
