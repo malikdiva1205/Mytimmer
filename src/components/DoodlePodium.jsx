@@ -64,16 +64,19 @@ function OutlineChar({ cx, topY, color, pose = 'second' }) {
 export default function DoodlePodium({ top3 = [] }) {
   const [first, second, third] = top3;
 
-  // Sophisticated glowing neon palette
-  const GOLD   = '#f1c40f';
-  const SILVER = '#b8c2c6';
-  const BRONZE = '#d38c44';
+  const GRAD_1 = 'url(#grad-first)';
+  const GRAD_2 = 'url(#grad-second)';
+  const GRAD_3 = 'url(#grad-third)';
+
+  const COLOR_1 = '#cca0e8'; // Match stick figure to the purple part of the big box
+  const COLOR_2 = '#f5cda0'; // Match stick figure to the peach part of the small box
+  const COLOR_3 = '#9ccbed'; // Blue
 
   const GROUND = 250;
   const BLOCK = {
-    first:  { x: 155, w: 130, h: 100, color: GOLD   },
-    second: { x:  35, w: 110, h:  75, color: SILVER },
-    third:  { x: 295, w: 110, h:  55, color: BRONZE },
+    first:  { x: 155, w: 130, h: 100, fill: GRAD_1, stroke: COLOR_1 },
+    second: { x:  35, w: 110, h:  75, fill: GRAD_2, stroke: COLOR_2 },
+    third:  { x: 295, w: 110, h:  55, fill: GRAD_3, stroke: COLOR_3 },
   };
 
   const CHAR_H = 70; // approx height of the stick figure
@@ -90,22 +93,17 @@ export default function DoodlePodium({ top3 = [] }) {
     third:  BLOCK.third.x  + BLOCK.third.w  / 2,
   };
 
-  // Helper for generating glowing boxes
   const PodiumBlock = ({ block, label }) => (
     <g>
-      {/* Glow effect */}
       <rect 
         x={block.x} y={GROUND - block.h} 
         width={block.w} height={block.h} 
-        rx="8" fill={block.color} fillOpacity="0.08" 
-        stroke={block.color} strokeWidth="2"
-        style={{ filter: `drop-shadow(0 0 8px ${block.color}60)` }} 
+        rx="12" fill={block.fill}
       />
       <text 
         x={block.x + block.w / 2} y={GROUND - 16}
-        textAnchor="middle" fill={block.color}
+        textAnchor="middle" fill="#ffffff" fillOpacity="0.95"
         fontFamily="Share Tech Mono, monospace" fontSize="36" fontWeight="bold"
-        style={{ filter: `drop-shadow(0 0 6px ${block.color}60)` }}
       >
         {label}
       </text>
@@ -117,6 +115,21 @@ export default function DoodlePodium({ top3 = [] }) {
       <svg viewBox="0 0 440 280" fill="none" xmlns="http://www.w3.org/2000/svg"
         style={{ width: '100%', height: 'auto', display: 'block' }}>
         
+        <defs>
+          <linearGradient id="grad-first" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#c5a9ee" />
+            <stop offset="100%" stopColor="#9ccbed" />
+          </linearGradient>
+          <linearGradient id="grad-second" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#f7ba9c" />
+            <stop offset="100%" stopColor="#c5a9ee" />
+          </linearGradient>
+          <linearGradient id="grad-third" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a4e4d6" />
+            <stop offset="100%" stopColor="#9ccbed" />
+          </linearGradient>
+        </defs>
+
         {/* Subtle ground dashed line */}
         <line x1="20" y1={GROUND} x2="420" y2={GROUND}
           stroke="var(--text-medium)" strokeOpacity="0.3" strokeWidth="2" strokeDasharray="8 6" />
@@ -127,9 +140,9 @@ export default function DoodlePodium({ top3 = [] }) {
         <PodiumBlock block={BLOCK.first} label="1" />
 
         {/* Outline Stick Figures */}
-        {second && <OutlineChar cx={charCX.second} topY={topY.second} color={SILVER} pose="second" />}
-        {third  && <OutlineChar cx={charCX.third}  topY={topY.third}  color={BRONZE} pose="third"  />}
-        {first  && <OutlineChar cx={charCX.first}  topY={topY.first}  color={GOLD}   pose="winner" />}
+        {second && <OutlineChar cx={charCX.second} topY={topY.second} color={BLOCK.second.stroke} pose="second" />}
+        {third  && <OutlineChar cx={charCX.third}  topY={topY.third}  color={BLOCK.third.stroke} pose="third"  />}
+        {first  && <OutlineChar cx={charCX.first}  topY={topY.first}  color={BLOCK.first.stroke} pose="winner" />}
       </svg>
 
       {/* Name + time labels */}
@@ -139,7 +152,7 @@ export default function DoodlePodium({ top3 = [] }) {
             <div style={{ fontSize: '0.90rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {second.name.split(' ')[0]}
             </div>
-            <div style={{ fontSize: '0.78rem', color: SILVER, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.78rem', color: BLOCK.second.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
               {formatTime(second.total_time)}
             </div>
           </> : <div style={{ height: 36 }} />}
@@ -150,7 +163,7 @@ export default function DoodlePodium({ top3 = [] }) {
             <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {first.name.split(' ')[0]}
             </div>
-            <div style={{ fontSize: '0.86rem', color: GOLD, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.86rem', color: BLOCK.first.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
               {formatTime(first.total_time)}
             </div>
           </> : <div style={{ height: 36 }} />}
@@ -161,7 +174,7 @@ export default function DoodlePodium({ top3 = [] }) {
             <div style={{ fontSize: '0.90rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {third.name.split(' ')[0]}
             </div>
-            <div style={{ fontSize: '0.78rem', color: BRONZE, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.78rem', color: BLOCK.third.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
               {formatTime(third.total_time)}
             </div>
           </> : <div style={{ height: 36 }} />}
