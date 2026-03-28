@@ -10,40 +10,49 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-// Cluster of hand-drawn sparkles (4-pointed) matching the user reference
+// Chunky hand-drawn 5-point star with floating sparkles
 function HandDrawnStar({ cx, cy, fill, size = 1 }) {
-  const Sparkle = ({ dx, dy, s }) => {
-    const x = cx + dx * size;
-    const y = cy + dy * size;
-    const h = 20 * s * size; // Vertical stretch
-    const w = 12 * s * size; // Horizontal width
-    const d = `M ${x},${y - h} Q ${x},${y} ${x + w},${y} Q ${x},${y} ${x},${y + h} Q ${x},${y} ${x - w},${y} Q ${x},${y} ${x},${y - h} Z`;
-    return <path d={d} fill={fill} stroke="#2d3748" strokeWidth="3" strokeLinejoin="round" />;
-  };
+  const outerR = 22;
+  const innerR = 10;
 
-  const Plus = ({ dx, dy, s }) => {
-    const x = cx + dx * size;
-    const y = cy + dy * size;
-    const len = 5 * s * size;
-    return (
-      <g stroke="#2d3748" strokeWidth="3" strokeLinecap="round">
-        <line x1={x} y1={y - len} x2={x} y2={y + len} />
-        <line x1={x - len} y1={y} x2={x + len} y2={y} />
-      </g>
-    );
-  };
+  // Generate an irregular, organic 5-point star path
+  let path = "";
+  for (let i = 0; i < 10; i++) {
+    const isOuter = i % 2 === 0;
+    let r = isOuter ? outerR : innerR;
+    
+    // Slight imperfections for the hand-drawn look
+    if (i === 0) r += 2; // top point slightly longer
+    if (i === 4) r -= 1.5; // bottom right shorter
+    if (i === 5) r += 1.5; // inner bottom offset
+    if (i === 8) r += 1; // top left slightly longer
+    
+    const a = (Math.PI * 2 * i) / 10 - Math.PI / 2;
+    const x = Math.cos(a) * r;
+    const y = Math.sin(a) * r;
+    path += (i === 0 ? "M " : "L ") + `${x.toFixed(1)},${y.toFixed(1)} `;
+  }
+  path += "Z";
 
   return (
-    <g>
-      {/* Top Left large sparkle */}
-      <Sparkle dx={-12} dy={-15} s={1.1} />
-      {/* Bottom Right medium sparkle */}
-      <Sparkle dx={18} dy={12} s={0.8} />
-      {/* Bottom tiny sparkle */}
-      <Sparkle dx={-2} dy={36} s={0.4} />
-      {/* Decorator plus signs */}
-      <Plus dx={25} dy={-25} s={1} />
-      <Plus dx={-25} dy={22} s={1.2} />
+    <g transform={`translate(${cx}, ${cy}) scale(${size}) rotate(6)`}>
+      <path 
+        d={path} 
+        fill={fill} 
+        stroke="#2d3748" 
+        strokeWidth="4.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+      />
+      {/* Floating dot/seed sparkles around the star */}
+      <ellipse cx="26" cy="-18" rx="2" ry="6" fill="#2d3748" transform="rotate(35 26 -18)" />
+      <ellipse cx="12" cy="-28" rx="2" ry="5" fill="#2d3748" transform="rotate(70 12 -28)" />
+      
+      <ellipse cx="-28" cy="16" rx="2.5" ry="6" fill="#2d3748" transform="rotate(40 -28 16)" />
+      <ellipse cx="-16" cy="28" rx="2" ry="4" fill="#2d3748" transform="rotate(70 -16 28)" />
+      
+      <ellipse cx="-28" cy="-12" rx="2" ry="4" fill="#2d3748" transform="rotate(-30 -28 -12)" />
+      <ellipse cx="32" cy="18" rx="2.5" ry="5" fill="#2d3748" transform="rotate(-40 32 18)" />
     </g>
   );
 }
