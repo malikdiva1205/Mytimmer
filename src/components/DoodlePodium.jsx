@@ -10,51 +10,28 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-// Minimal outline stick figure matching the sophisticated image
-function OutlineChar({ cx, topY, color, pose = 'second' }) {
-  const headR = 12;
-  const hcy = topY + headR;
-  const neckY = hcy + headR;
-  const bcy = neckY + 24; // length of body line
-
-  const isWinner = pose === 'winner';
-
-  // Arm positions
-  const arms = {
-    winner: `M ${cx},${neckY + 6} L ${cx - 24},${neckY - 14} M ${cx},${neckY + 6} L ${cx + 24},${neckY - 14}`,
-    second: `M ${cx},${neckY + 6} L ${cx - 20},${neckY - 8} M ${cx},${neckY + 6} L ${cx + 20},${neckY + 8}`,
-    third:  `M ${cx},${neckY + 6} L ${cx - 20},${neckY + 8} M ${cx},${neckY + 6} L ${cx + 20},${neckY - 8}`,
-  };
-
-  // Leg positions
-  const legBot = bcy + 22;
-  const legs = `M ${cx - 12},${legBot} L ${cx},${bcy} L ${cx + 12},${legBot}`;
+// Minimal sophisticated sparkling star
+function ElegantStar({ cx, cy, color, size = 1 }) {
+  const s = size * 22;
+  const path = `M ${cx},${cy - s} Q ${cx},${cy} ${cx + s},${cy} Q ${cx},${cy} ${cx},${cy + s} Q ${cx},${cy} ${cx - s},${cy} Q ${cx},${cy} ${cx},${cy - s} Z`;
+  
+  const s2 = size * 32; // larger glow shape
+  const glowPath = `M ${cx},${cy - s2} Q ${cx},${cy} ${cx + s2},${cy} Q ${cx},${cy} ${cx},${cy + s2} Q ${cx},${cy} ${cx - s2},${cy} Q ${cx},${cy} ${cx},${cy - s2} Z`;
 
   return (
-    <g stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none">
-      {/* Head */}
-      <circle cx={cx} cy={hcy} r={headR} />
+    <g>
+      {/* Outer blurred glow */}
+      <path d={glowPath} fill={color} fillOpacity="0.2" style={{ filter: `drop-shadow(0 0 10px ${color}90)` }} />
+      {/* Core star */}
+      <path d={path} fill={color} />
+      {/* Bright center */}
+      <circle cx={cx} cy={cy} r={size * 3.5} fill="#ffffff" fillOpacity="0.95" />
       
-      {/* Eyes and Mouth (very minimal) */}
-      <circle cx={cx - 4} cy={hcy - 2} r="1" fill={color} stroke="none" />
-      <circle cx={cx + 4} cy={hcy - 2} r="1" fill={color} stroke="none" />
-      <path d={`M ${cx - 3},${hcy + 4} Q ${cx},${hcy + 7} ${cx + 3},${hcy + 4}`} strokeWidth="1.5" />
-
-      {/* Body */}
-      <line x1={cx} y1={neckY} x2={cx} y2={bcy} />
-
-      {/* Arms & Legs */}
-      <path d={arms[pose]} />
-      <path d={legs} />
-
-      {/* Chest Medal */}
-      <circle cx={cx} cy={neckY + 12} r="5" fill={color} fillOpacity="0.2" />
-
-      {/* Winner Stars on hands */}
-      {isWinner && (
+      {/* Little additional sparkles for 1st place only */}
+      {size > 1 && (
         <>
-          <path d={`M ${cx - 24},${neckY - 24} l 2,6 l 6,2 l -6,2 l -2,6 l -2,-6 l -6,-2 l 6,-2 Z`} fill={color} stroke="none" />
-          <path d={`M ${cx + 24},${neckY - 24} l 2,6 l 6,2 l -6,2 l -2,6 l -2,-6 l -6,-2 l 6,-2 Z`} fill={color} stroke="none" />
+          <path d={`M ${cx - 24},${cy - 20} q 6,6 12,0 q -6,-6 -12,0 Z`} fill={color} fillOpacity="0.6" transform={`rotate(45 ${cx-18} ${cy-20})`} />
+          <path d={`M ${cx + 24},${cy + 16} q 4,4 8,0 q -4,-4 -8,0 Z`} fill={color} fillOpacity="0.6" transform={`rotate(45 ${cx+28} ${cy+16})`} />
         </>
       )}
     </g>
@@ -79,13 +56,10 @@ export default function DoodlePodium({ top3 = [] }) {
     third:  { x: 295, w: 110, h:  55, fill: GRAD_3, stroke: COLOR_3 },
   };
 
-  const CHAR_H = 70; // approx height of the stick figure
-  const PAD = 4;
-
-  const topY = {
-    first:  GROUND - BLOCK.first.h  - CHAR_H + PAD,
-    second: GROUND - BLOCK.second.h - CHAR_H + PAD,
-    third:  GROUND - BLOCK.third.h  - CHAR_H + PAD,
+  const starCY = {
+    first:  GROUND - BLOCK.first.h  - 36,
+    second: GROUND - BLOCK.second.h - 28,
+    third:  GROUND - BLOCK.third.h  - 28,
   };
   const charCX = {
     first:  BLOCK.first.x  + BLOCK.first.w  / 2,
@@ -139,10 +113,10 @@ export default function DoodlePodium({ top3 = [] }) {
         <PodiumBlock block={BLOCK.third} label="3" />
         <PodiumBlock block={BLOCK.first} label="1" />
 
-        {/* Outline Stick Figures */}
-        {second && <OutlineChar cx={charCX.second} topY={topY.second} color={BLOCK.second.stroke} pose="second" />}
-        {third  && <OutlineChar cx={charCX.third}  topY={topY.third}  color={BLOCK.third.stroke} pose="third"  />}
-        {first  && <OutlineChar cx={charCX.first}  topY={topY.first}  color={BLOCK.first.stroke} pose="winner" />}
+        {/* Sophisticated Stars */}
+        {second && <ElegantStar cx={charCX.second} cy={starCY.second} color={BLOCK.second.stroke} size={0.8} />}
+        {third  && <ElegantStar cx={charCX.third}  cy={starCY.third}  color={BLOCK.third.stroke} size={0.7} />}
+        {first  && <ElegantStar cx={charCX.first}  cy={starCY.first}  color={BLOCK.first.stroke} size={1.2} />}
       </svg>
 
       {/* Name + time labels */}
