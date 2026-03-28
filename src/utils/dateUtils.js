@@ -51,3 +51,24 @@ export function getCurrentTimeStr() {
 export function monthName(month) {
   return new Date(2000, month, 1).toLocaleString('en-US', { month: 'long' });
 }
+
+// Get the start (Monday) and end (Sunday) of the current week as YYYY-MM-DD strings
+export function getWeekRange() {
+  const now = new Date();
+  
+  // getDay() gives 0 for Sunday, 1 for Monday... 
+  // We want Monday to be 0 for our math, so Sunday is 6
+  const currentDayInfo = now.getDay();
+  const diffToMonday = currentDayInfo === 0 ? 6 : currentDayInfo - 1;
+  
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - diffToMonday);
+  
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  
+  return {
+    weekStart: localDateStr(startOfWeek),
+    weekEnd: localDateStr(endOfWeek)
+  };
+}

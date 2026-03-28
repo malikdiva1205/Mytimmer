@@ -145,18 +145,50 @@ app.post('/api/sessions', async (req, res) => {
 
 // GET /api/leaderboard
 app.get('/api/leaderboard', async (req, res) => {
+  const { today, weekStart, weekEnd } = req.query;
+
   try {
-    const result = await pool.query(`
+    // 1. Daily Leaderboard
+    let dailyQuery = `
       SELECT u.id, u.name,
              COALESCE(SUM(s.duration), 0) AS total_time,
              COUNT(s.id) AS session_count
       FROM users u
-      LEFT JOIN sessions s ON u.id = s.user_id
+      LEFT JOIN sessions s ON u.id = s.user_id 
+      ${today ? 'AND s.date = $1' : ''}
       GROUP BY u.id, u.name
       HAVING COALESCE(SUM(s.duration), 0) > 0
       ORDER BY total_time DESC
-    `);
-    res.json(result.rows);
+    `;
+    let dailyResult = today 
+      ? await pool.query(dailyQuery, [today]) 
+      : await pool.query(dailyQuery);
+
+    // 2. Weekly Podium (Top 3 only)
+    let weeklyQuery = `
+      SELECT u.id, u.name,
+             COALESCE(SUM(s.duration), 0) AS total_time,
+             COUNT(s.id) AS session_count
+      FROM users u
+      LEFT JOIN sessions s ON u.id = s.user_id 
+      ${weekStart && weekEnd ? 'AND s.date >= $1 AND s.date <= $2' : ''}
+      GROUP BY u.id, u.name
+      HAVING COALESCE(SUM(s.duration), 0) > 0
+      ORDER BY total_time DESC
+      LIMIT 3
+    `;
+    let weeklyResult;
+    if (weekStart && weekEnd) {
+      weeklyResult = await pool.query(weeklyQuery, [weekStart, weekEnd]);
+    } else {
+      // Fallback if no week ranges provided
+      weeklyResult = await pool.query(weeklyQuery.replace('LIMIT 3', '') + ' LIMIT 3');
+    }
+
+    res.json({
+      daily: dailyResult.rows,
+      weekly: weeklyResult.rows
+    });
   } catch (err) {
     console.error('Error fetching leaderboard:', err);
     res.status(500).json({ error: 'Internal server error' });
