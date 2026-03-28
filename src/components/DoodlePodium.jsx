@@ -10,81 +10,74 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-// A single doodle stickfigure character
-// pose: 'winner' | 'second' | 'third'
-function StickFigure({ cx, cy, color = '#3d3452', pose = 'second', medalColor }) {
-  const headR = 13;
+// Cute blob character — snowman-style (big round head + small round body + arm & feet bumps)
+function BlobChar({ cx, topY, fill, stroke, pose = 'second' }) {
+  const headR = 17;
+  const bodyR = 13;
+  const hcy = topY + headR;                       // head center y
+  const bcy = hcy + headR + bodyR - 4;            // body center y (slight overlap)
 
-  // Pose-specific limb paths
-  const poses = {
-    winner: {
-      // Both arms raised high
-      leftArm:  `M ${cx - 8},${cy + 10} Q ${cx - 30},${cy - 10} ${cx - 38},${cy - 24}`,
-      rightArm: `M ${cx + 8},${cy + 10} Q ${cx + 30},${cy - 10} ${cx + 38},${cy - 24}`,
-      leftLeg:  `M ${cx},${cy + 42} L ${cx - 14},${cy + 72}`,
-      rightLeg: `M ${cx},${cy + 42} L ${cx + 14},${cy + 72}`,
-      // Big happy open smile
-      mouth: `M ${cx - 8},${cy - headR + 8} Q ${cx},${cy - headR + 18} ${cx + 8},${cy - headR + 8}`,
-      mouthFill: true,
-    },
-    second: {
-      // One arm confident/side, one slightly raised
-      leftArm:  `M ${cx - 8},${cy + 10} Q ${cx - 30},${cy + 4}  ${cx - 36},${cy - 8}`,
-      rightArm: `M ${cx + 8},${cy + 10} Q ${cx + 28},${cy + 14} ${cx + 34},${cy + 10}`,
-      leftLeg:  `M ${cx},${cy + 42} L ${cx - 12},${cy + 72}`,
-      rightLeg: `M ${cx},${cy + 42} L ${cx + 12},${cy + 72}`,
-      mouth: `M ${cx - 7},${cy - headR + 9} Q ${cx},${cy - headR + 17} ${cx + 7},${cy - headR + 9}`,
-      mouthFill: false,
-    },
-    third: {
-      // One arm raised, one lower
-      leftArm:  `M ${cx - 8},${cy + 10} Q ${cx - 28},${cy + 12} ${cx - 34},${cy + 8}`,
-      rightArm: `M ${cx + 8},${cy + 10} Q ${cx + 30},${cy - 8}  ${cx + 36},${cy - 18}`,
-      leftLeg:  `M ${cx},${cy + 42} L ${cx - 12},${cy + 72}`,
-      rightLeg: `M ${cx},${cy + 42} L ${cx + 12},${cy + 72}`,
-      mouth: `M ${cx - 7},${cy - headR + 9} Q ${cx},${cy - headR + 16} ${cx + 7},${cy - headR + 9}`,
-      mouthFill: false,
-    },
-  };
+  // Arm ellipse centres (beside the body)
+  const lax = cx - bodyR - 8;
+  const rax = cx + bodyR + 8;
+  const aY  = bcy - bodyR * 0.25;
 
-  const p = poses[pose];
+  // Arm tilt angles per pose
+  const tiltL = { winner: -60, second: -28, third: -20 };
+  const tiltR = { winner:  60, second:  18, third:  48 };
+
+  // Mouth width / drop
+  const mW   = pose === 'winner' ? 9  : 6;
+  const mDrop = pose === 'winner' ? 8  : 4;
+  const mY   = hcy + 5;
+
+  // Feet ellipse centres
+  const lfx = cx - 7;
+  const rfx = cx + 7;
+  const fy  = bcy + bodyR + 6;
 
   return (
-    <g stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none">
-      {/* Head */}
-      <circle cx={cx} cy={cy - headR - 12} r={headR} />
+    <g>
+      {/* ── Arms ── */}
+      <ellipse cx={lax} cy={aY} rx={9} ry={5}
+        fill={fill} stroke={stroke} strokeWidth="1.8"
+        transform={`rotate(${tiltL[pose]},${lax},${aY})`} />
+      <ellipse cx={rax} cy={aY} rx={9} ry={5}
+        fill={fill} stroke={stroke} strokeWidth="1.8"
+        transform={`rotate(${tiltR[pose]},${rax},${aY})`} />
 
-      {/* Eyes */}
-      <circle cx={cx - 4} cy={cy - headR - 14} r="2" fill={color} stroke="none" />
-      <circle cx={cx + 4} cy={cy - headR - 14} r="2" fill={color} stroke="none" />
+      {/* ── Body ── */}
+      <circle cx={cx} cy={bcy} r={bodyR} fill={fill} stroke={stroke} strokeWidth="2" />
 
-      {/* Mouth */}
-      {p.mouthFill ? (
-        <path d={p.mouth} fill={color} stroke="none" />
-      ) : (
-        <path d={p.mouth} strokeWidth="2.5" />
-      )}
+      {/* ── Head ── */}
+      <circle cx={cx} cy={hcy} r={headR} fill={fill} stroke={stroke} strokeWidth="2" />
 
-      {/* Body */}
-      <line x1={cx} y1={cy - 2} x2={cx} y2={cy + 42} />
+      {/* ── Eyes ── */}
+      <circle cx={cx - 5} cy={hcy - 4} r="2.5" fill={stroke} />
+      <circle cx={cx + 5} cy={hcy - 4} r="2.5" fill={stroke} />
+      {/* eye shine */}
+      <circle cx={cx - 3.8} cy={hcy - 5.5} r="1" fill="rgba(255,255,255,0.85)" />
+      <circle cx={cx + 6.2} cy={hcy - 5.5} r="1" fill="rgba(255,255,255,0.85)" />
 
-      {/* Arms */}
-      <path d={p.leftArm} strokeWidth="3" />
-      <path d={p.rightArm} strokeWidth="3" />
+      {/* ── Mouth ── */}
+      <path
+        d={`M ${cx - mW} ${mY} Q ${cx} ${mY + mDrop} ${cx + mW} ${mY}`}
+        fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round"
+      />
 
-      {/* Legs */}
-      <path d={p.leftLeg} />
-      <path d={p.rightLeg} />
+      {/* ── Feet ── */}
+      <ellipse cx={lfx} cy={fy} rx={5.5} ry={4} fill={fill} stroke={stroke} strokeWidth="1.8" />
+      <ellipse cx={rfx} cy={fy} rx={5.5} ry={4} fill={fill} stroke={stroke} strokeWidth="1.8" />
 
-      {/* Medal ribbon */}
-      <line x1={cx} y1={cy + 6} x2={cx} y2={cy + 20} strokeWidth="2.5" stroke={medalColor} />
-      {/* Medal disk */}
-      <circle cx={cx} cy={cy + 26} r="8" fill={medalColor} fillOpacity="0.25" stroke={medalColor} strokeWidth="2.5" />
-      {/* Sparkle (winner only) */}
+      {/* ── Winner sparkles ── */}
       {pose === 'winner' && (
         <>
-          <path d={`M ${cx - 48},${cy - 50} l 4,-10 l 4,10 l 10,4 l -10,4 l -4,10 l -4,-10 l -10,-4 Z`} stroke={medalColor} strokeWidth="1.5" fill={medalColor} fillOpacity="0.4" />
-          <path d={`M ${cx + 42},${cy - 42} l 3,-8 l 3,8 l 8,3 l -8,3 l -3,8 l -3,-8 l -8,-3 Z`} stroke={medalColor} strokeWidth="1.5" fill={medalColor} fillOpacity="0.4" />
+          <path
+            d={`M ${cx+26} ${hcy-24} l 3.8,-8.5 l 3.8,8.5 l 8.5,3.8 l -8.5,3.8 l -3.8,8.5 l -3.8,-8.5 l -8.5,-3.8 Z`}
+            fill={stroke} fillOpacity="0.65" stroke="none" />
+          <path
+            d={`M ${cx-26} ${hcy-18} l 2.5,-5.5 l 2.5,5.5 l 5.5,2.5 l -5.5,2.5 l -2.5,5.5 l -2.5,-5.5 l -5.5,-2.5 Z`}
+            fill={stroke} fillOpacity="0.45" stroke="none" />
         </>
       )}
     </g>
@@ -94,95 +87,96 @@ function StickFigure({ cx, cy, color = '#3d3452', pose = 'second', medalColor })
 export default function DoodlePodium({ top3 = [] }) {
   const [first, second, third] = top3;
 
-  const GOLD   = '#c9a800';
-  const SILVER = '#8a8a9a';
-  const BRONZE = '#a0632a';
+  // Pastel palette — no gold/silver/bronze
+  const LAV  = { fill: '#ddd6f8', stroke: '#9180c8', light: 'rgba(197,184,232,0.22)' };
+  const PEACH = { fill: '#fde0c8', stroke: '#d4895a', light: 'rgba(247,197,160,0.22)' };
+  const SAGE  = { fill: '#cde9df', stroke: '#5faa8a', light: 'rgba(181,213,197,0.22)' };
 
-  // Podium block config: [x_left, y_top, width, height, label]
-  // The SVG is 440 wide, 320 tall. Ground line at y=270.
-  const GROUND = 270;
+  const GROUND = 265;
   const BLOCK = {
-    first:  { x: 155, w: 130, h: 110, label: '1' },  // tallest center
-    second: { x: 40,  w: 110, h:  80, label: '2' },  // left
-    third:  { x: 290, w: 110, h:  60, label: '3' },  // right
+    first:  { x: 155, w: 130, h: 110, col: LAV   },
+    second: { x:  38, w: 112, h:  80, col: PEACH  },
+    third:  { x: 292, w: 112, h:  60, col: SAGE   },
   };
 
-  // Character center-X = block.x + block.w/2
-  // Character base-Y = GROUND - block.h   (bottom of body aligned with top of block)
-  const char = {
-    first:  { cx: BLOCK.first.x  + BLOCK.first.w  / 2, cy: GROUND - BLOCK.first.h  - 70 },
-    second: { cx: BLOCK.second.x + BLOCK.second.w / 2, cy: GROUND - BLOCK.second.h - 70 },
-    third:  { cx: BLOCK.third.x  + BLOCK.third.w  / 2, cy: GROUND - BLOCK.third.h  - 70 },
+  // Character top-y so feet sit just on the block top
+  // blob total height ≈ 17 + (17+13-4) + (13+6+4) = 66px
+  const BLOB_H = 64;
+  const gap    =  2; // slight float above block
+
+  const topY = {
+    first:  GROUND - BLOCK.first.h  - BLOB_H - gap,
+    second: GROUND - BLOCK.second.h - BLOB_H - gap,
+    third:  GROUND - BLOCK.third.h  - BLOB_H - gap,
+  };
+  const cx = {
+    first:  BLOCK.first.x  + BLOCK.first.w  / 2,
+    second: BLOCK.second.x + BLOCK.second.w / 2,
+    third:  BLOCK.third.x  + BLOCK.third.w  / 2,
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: 460, margin: '0 auto' }}>
+    <div style={{ width: '100%', maxWidth: 480, margin: '0 auto' }}>
       <svg
-        viewBox="0 0 440 320"
+        viewBox="0 0 440 300"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ width: '100%', height: 'auto', display: 'block' }}
       >
         {/* ── Podium blocks ── */}
-        {/* 2nd place block */}
+        {/* 2nd – peach */}
         <rect
           x={BLOCK.second.x} y={GROUND - BLOCK.second.h}
           width={BLOCK.second.w} height={BLOCK.second.h}
-          rx="6" ry="6"
-          fill="rgba(192,192,192,0.18)" stroke={SILVER} strokeWidth="2.5"
+          rx="12" fill={PEACH.light} stroke={PEACH.stroke} strokeWidth="2"
         />
-        <text
-          x={BLOCK.second.x + BLOCK.second.w / 2} y={GROUND - 14}
-          textAnchor="middle" fill={SILVER}
-          fontFamily="Share Tech Mono, monospace" fontSize="28" fontWeight="bold"
-        >2</text>
+        <text x={BLOCK.second.x + BLOCK.second.w / 2} y={GROUND - 10}
+          textAnchor="middle" fill={PEACH.stroke}
+          fontFamily="Sofia, cursive" fontSize="28" fontWeight="bold">2</text>
 
-        {/* 1st place block */}
+        {/* 1st – lavender */}
         <rect
           x={BLOCK.first.x} y={GROUND - BLOCK.first.h}
           width={BLOCK.first.w} height={BLOCK.first.h}
-          rx="6" ry="6"
-          fill="rgba(255,215,0,0.15)" stroke={GOLD} strokeWidth="2.5"
+          rx="12" fill={LAV.light} stroke={LAV.stroke} strokeWidth="2"
         />
-        <text
-          x={BLOCK.first.x + BLOCK.first.w / 2} y={GROUND - 14}
-          textAnchor="middle" fill={GOLD}
-          fontFamily="Share Tech Mono, monospace" fontSize="28" fontWeight="bold"
-        >1</text>
+        <text x={BLOCK.first.x + BLOCK.first.w / 2} y={GROUND - 10}
+          textAnchor="middle" fill={LAV.stroke}
+          fontFamily="Sofia, cursive" fontSize="28" fontWeight="bold">1</text>
 
-        {/* 3rd place block */}
+        {/* 3rd – sage */}
         <rect
           x={BLOCK.third.x} y={GROUND - BLOCK.third.h}
           width={BLOCK.third.w} height={BLOCK.third.h}
-          rx="6" ry="6"
-          fill="rgba(205,127,50,0.15)" stroke={BRONZE} strokeWidth="2.5"
+          rx="12" fill={SAGE.light} stroke={SAGE.stroke} strokeWidth="2"
         />
-        <text
-          x={BLOCK.third.x + BLOCK.third.w / 2} y={GROUND - 14}
-          textAnchor="middle" fill={BRONZE}
-          fontFamily="Share Tech Mono, monospace" fontSize="28" fontWeight="bold"
-        >3</text>
+        <text x={BLOCK.third.x + BLOCK.third.w / 2} y={GROUND - 10}
+          textAnchor="middle" fill={SAGE.stroke}
+          fontFamily="Sofia, cursive" fontSize="28" fontWeight="bold">3</text>
 
-        {/* ── Ground line ── */}
-        <line x1="20" y1={GROUND} x2="420" y2={GROUND} stroke="rgba(100,80,140,0.3)" strokeWidth="2" strokeDasharray="6 4" />
+        {/* ── Ground dashed line ── */}
+        <line x1="18" y1={GROUND} x2="422" y2={GROUND}
+          stroke="rgba(197,184,232,0.5)" strokeWidth="2" strokeDasharray="6 5" />
 
-        {/* ── Stick figures ── */}
-        {second && <StickFigure cx={char.second.cx} cy={char.second.cy} pose="second" medalColor={SILVER} />}
-        {first  && <StickFigure cx={char.first.cx}  cy={char.first.cy}  pose="winner" medalColor={GOLD} />}
-        {third  && <StickFigure cx={char.third.cx}  cy={char.third.cy}  pose="third"  medalColor={BRONZE} />}
+        {/* ── Blob characters ── */}
+        {second && <BlobChar cx={cx.second} topY={topY.second} fill={PEACH.fill} stroke={PEACH.stroke} pose="second" />}
+        {first  && <BlobChar cx={cx.first}  topY={topY.first}  fill={LAV.fill}   stroke={LAV.stroke}   pose="winner" />}
+        {third  && <BlobChar cx={cx.third}  topY={topY.third}  fill={SAGE.fill}  stroke={SAGE.stroke}  pose="third"  />}
       </svg>
 
-      {/* ── Name + time labels beneath each block ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '-4px', padding: '0 8px' }}>
-
+      {/* ── Name + time labels ── */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+        marginTop: '-2px', padding: '0 4px',
+      }}>
         {/* 2nd */}
         <div style={{ width: '28%', textAlign: 'center' }}>
           {second ? (
             <>
-              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {second.name.split(' ')[0]}
               </div>
-              <div style={{ fontSize: '0.78rem', color: SILVER, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+              <div style={{ fontSize: '0.78rem', color: PEACH.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
                 {formatTime(second.total_time)}
               </div>
             </>
@@ -193,10 +187,10 @@ export default function DoodlePodium({ top3 = [] }) {
         <div style={{ width: '36%', textAlign: 'center' }}>
           {first ? (
             <>
-              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {first.name.split(' ')[0]}
               </div>
-              <div style={{ fontSize: '0.85rem', color: GOLD, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+              <div style={{ fontSize: '0.86rem', color: LAV.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
                 {formatTime(first.total_time)}
               </div>
             </>
@@ -207,10 +201,10 @@ export default function DoodlePodium({ top3 = [] }) {
         <div style={{ width: '28%', textAlign: 'center' }}>
           {third ? (
             <>
-              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {third.name.split(' ')[0]}
               </div>
-              <div style={{ fontSize: '0.78rem', color: BRONZE, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+              <div style={{ fontSize: '0.78rem', color: SAGE.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
                 {formatTime(third.total_time)}
               </div>
             </>
