@@ -101,16 +101,16 @@ function DoodleChar({ cx, topY, fill, stroke, pose }) {
 export default function DoodlePodium({ top3 = [] }) {
   const [first, second, third] = top3;
 
-  // pink/purple palette from user
-  const PINK   = { fill: '#fde0ee', stroke: '#d95f88' }; // 1st – bright pink
-  const PERIWI = { fill: '#e4e8f8', stroke: '#7880c8' }; // 2nd – soft periwinkle
-  const MAUVE  = { fill: '#f2ddef', stroke: '#b84d78' }; // 3rd – dusty rose
+  // Teal-navy palette from user swatch
+  const LAV   = { fill: '#b0ecea', stroke: '#16aaa4' }; // teal (1st)
+  const PEACH = { fill: '#c8f2ef', stroke: '#50c8c2' }; // light mint (2nd)
+  const MINT  = { fill: '#c4ccf4', stroke: '#1c38c8' }; // deep navy (3rd)
 
   const GROUND = 268;
   const BLOCK = {
-    first:  { x: 152, w: 132, h: 112, c: PINK   },
-    second: { x:  36, w: 112, h:  80, c: PERIWI },
-    third:  { x: 292, w: 112, h:  60, c: MAUVE  },
+    first:  { x: 152, w: 132, h: 112, c: LAV   },
+    second: { x:  36, w: 112, h:  80, c: PEACH  },
+    third:  { x: 292, w: 112, h:  60, c: MINT   },
   };
 
   // char height ≈ headR + (headR+bodyRy-7) + bodyRy + 16 = 22+35+19+16 = 92
@@ -133,28 +133,28 @@ export default function DoodlePodium({ top3 = [] }) {
       <svg viewBox="0 0 440 298" fill="none" xmlns="http://www.w3.org/2000/svg"
         style={{ width: '100%', height: 'auto', display: 'block' }}>
 
-        {/* 2nd – periwinkle */}
+        {/* 2nd – peach */}
         <rect x={BLOCK.second.x} y={GROUND - BLOCK.second.h}
           width={BLOCK.second.w} height={BLOCK.second.h} rx="12"
-          fill="rgba(120,128,200,0.12)" stroke={PERIWI.stroke} strokeWidth="2.2" />
+          fill="rgba(80,200,194,0.12)" stroke={PEACH.stroke} strokeWidth="2.2" />
         <text x={BLOCK.second.x + BLOCK.second.w / 2} y={GROUND - 9}
-          textAnchor="middle" fill={PERIWI.stroke}
+          textAnchor="middle" fill={PEACH.stroke}
           fontFamily="Sofia, cursive" fontSize="26" fontWeight="bold">2</text>
 
-        {/* 1st – bright pink */}
+        {/* 1st – lavender */}
         <rect x={BLOCK.first.x} y={GROUND - BLOCK.first.h}
           width={BLOCK.first.w} height={BLOCK.first.h} rx="12"
-          fill="rgba(217,95,136,0.12)" stroke={PINK.stroke} strokeWidth="2.2" />
+          fill="rgba(22,170,164,0.12)" stroke={LAV.stroke} strokeWidth="2.2" />
         <text x={BLOCK.first.x + BLOCK.first.w / 2} y={GROUND - 9}
-          textAnchor="middle" fill={PINK.stroke}
+          textAnchor="middle" fill={LAV.stroke}
           fontFamily="Sofia, cursive" fontSize="26" fontWeight="bold">1</text>
 
-        {/* 3rd – dusty rose */}
+        {/* 3rd – mint */}
         <rect x={BLOCK.third.x} y={GROUND - BLOCK.third.h}
           width={BLOCK.third.w} height={BLOCK.third.h} rx="12"
-          fill="rgba(184,77,120,0.12)" stroke={MAUVE.stroke} strokeWidth="2.2" />
+          fill="rgba(28,56,200,0.10)" stroke={MINT.stroke} strokeWidth="2.2" />
         <text x={BLOCK.third.x + BLOCK.third.w / 2} y={GROUND - 9}
-          textAnchor="middle" fill={MAUVE.stroke}
+          textAnchor="middle" fill={MINT.stroke}
           fontFamily="Sofia, cursive" fontSize="26" fontWeight="bold">3</text>
 
         {/* Ground line */}
@@ -162,9 +162,9 @@ export default function DoodlePodium({ top3 = [] }) {
           stroke="rgba(197,184,232,0.45)" strokeWidth="2" strokeDasharray="6 4" />
 
         {/* Characters — draw second & third first so winner is on top */}
-        {second && <DoodleChar cx={charCX.second} topY={topY.second} fill={PERIWI.fill} stroke={PERIWI.stroke} pose="second" />}
-        {third  && <DoodleChar cx={charCX.third}  topY={topY.third}  fill={MAUVE.fill}  stroke={MAUVE.stroke}  pose="third"  />}
-        {first  && <DoodleChar cx={charCX.first}  topY={topY.first}  fill={PINK.fill}   stroke={PINK.stroke}   pose="winner" />}
+        {second && <DoodleChar cx={charCX.second} topY={topY.second} fill={PEACH.fill} stroke={PEACH.stroke} pose="second" />}
+        {third  && <DoodleChar cx={charCX.third}  topY={topY.third}  fill={MINT.fill}  stroke={MINT.stroke}  pose="third"  />}
+        {first  && <DoodleChar cx={charCX.first}  topY={topY.first}  fill={LAV.fill}   stroke={LAV.stroke}   pose="winner" />}
       </svg>
 
       {/* Name + time labels */}
@@ -174,7 +174,7 @@ export default function DoodlePodium({ top3 = [] }) {
             <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {second.name.split(' ')[0]}
             </div>
-            <div style={{ fontSize: '0.76rem', color: PERIWI.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.76rem', color: PEACH.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
               {formatTime(second.total_time)}
             </div>
           </> : <div style={{ height: 36 }} />}
@@ -185,7 +185,7 @@ export default function DoodlePodium({ top3 = [] }) {
             <div style={{ fontSize: '0.96rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {first.name.split(' ')[0]}
             </div>
-            <div style={{ fontSize: '0.84rem', color: PINK.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.84rem', color: LAV.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
               {formatTime(first.total_time)}
             </div>
           </> : <div style={{ height: 36 }} />}
@@ -196,7 +196,7 @@ export default function DoodlePodium({ top3 = [] }) {
             <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {third.name.split(' ')[0]}
             </div>
-            <div style={{ fontSize: '0.76rem', color: MAUVE.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.76rem', color: MINT.stroke, fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
               {formatTime(third.total_time)}
             </div>
           </> : <div style={{ height: 36 }} />}
