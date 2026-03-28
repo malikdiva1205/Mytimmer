@@ -99,7 +99,10 @@ export default function StopwatchPage() {
   const statusClass = status === 'idle' ? 'status-idle' : status === 'running' ? 'status-running' : 'status-paused';
 
   return (
-    <Flashcard onBack={() => navigate('/select')}>
+    <Flashcard onBack={async () => {
+      if (elapsed > 0 && !saved) await handleSave();
+      navigate('/select');
+    }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
           <StopwatchIcon size={22} color="var(--text-medium)" />

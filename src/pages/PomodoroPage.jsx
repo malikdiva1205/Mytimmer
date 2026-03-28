@@ -188,7 +188,11 @@ export default function PomodoroPage() {
   const statusClass = status === 'running' ? 'status-running' : status === 'paused' ? 'status-paused' : status === 'done' ? 'status-done' : 'status-idle';
 
   return (
-    <Flashcard onBack={() => navigate('/select')}>
+    <Flashcard onBack={async () => {
+      const spent = totalSeconds - remaining;
+      if (spent > 0 && !saved) await handleSave();
+      navigate('/select');
+    }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
           <PomodoroIcon size={22} color="var(--text-medium)" />
