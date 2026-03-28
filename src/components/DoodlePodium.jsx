@@ -10,53 +10,6 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-// Chunky hand-drawn 5-point star with floating sparkles
-function HandDrawnStar({ cx, cy, fill, size = 1 }) {
-  const outerR = 22;
-  const innerR = 10;
-
-  // Generate an irregular, organic 5-point star path
-  let path = "";
-  for (let i = 0; i < 10; i++) {
-    const isOuter = i % 2 === 0;
-    let r = isOuter ? outerR : innerR;
-    
-    // Slight imperfections for the hand-drawn look
-    if (i === 0) r += 2; // top point slightly longer
-    if (i === 4) r -= 1.5; // bottom right shorter
-    if (i === 5) r += 1.5; // inner bottom offset
-    if (i === 8) r += 1; // top left slightly longer
-    
-    const a = (Math.PI * 2 * i) / 10 - Math.PI / 2;
-    const x = Math.cos(a) * r;
-    const y = Math.sin(a) * r;
-    path += (i === 0 ? "M " : "L ") + `${x.toFixed(1)},${y.toFixed(1)} `;
-  }
-  path += "Z";
-
-  return (
-    <g transform={`translate(${cx}, ${cy}) scale(${size}) rotate(6)`}>
-      <path 
-        d={path} 
-        fill={fill} 
-        stroke="#2d3748" 
-        strokeWidth="4.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-      />
-      {/* Floating dot/seed sparkles around the star */}
-      <ellipse cx="26" cy="-18" rx="2" ry="6" fill="#2d3748" transform="rotate(35 26 -18)" />
-      <ellipse cx="12" cy="-28" rx="2" ry="5" fill="#2d3748" transform="rotate(70 12 -28)" />
-      
-      <ellipse cx="-28" cy="16" rx="2.5" ry="6" fill="#2d3748" transform="rotate(40 -28 16)" />
-      <ellipse cx="-16" cy="28" rx="2" ry="4" fill="#2d3748" transform="rotate(70 -16 28)" />
-      
-      <ellipse cx="-28" cy="-12" rx="2" ry="4" fill="#2d3748" transform="rotate(-30 -28 -12)" />
-      <ellipse cx="32" cy="18" rx="2.5" ry="5" fill="#2d3748" transform="rotate(-40 32 18)" />
-    </g>
-  );
-}
-
 const DoodleBox = ({ x, y, w, h, fill, number, rank }) => {
   const p1 = `M ${x+2},${y+4} Q ${x+w/2},${y-3} ${x+w-2},${y+2} Q ${x+w+3},${y+h/2} ${x+w-1},${y+h-1} Q ${x+w/2},${y+h+2} ${x+2},${y+h-2} Q ${x-2},${y+h/2} ${x+2},${y+4} Z`;
   const p2 = `M ${x-1},${y+1} Q ${x+w/2},${y+5} ${x+w+1},${y-1} Q ${x+w-3},${y+h/2} ${x+w+2},${y+h+1} Q ${x+w/2},${y+h-1} ${x-1},${y+h+1} Q ${x+3},${y+h/2} ${x-1},${y+1} Z`;
@@ -122,6 +75,30 @@ const GroundScribbles = () => (
   </g>
 );
 
+const FloatingNameLabel = ({ cx, cy, user, color, featured }) => {
+  if (!user) return null;
+  const name = user.name.split(' ')[0];
+  const shortName = name.length > 9 ? name.slice(0, 8) + '...' : name;
+  return (
+    <g transform={`translate(${cx}, ${cy})`}>
+      <text 
+        x="0" y="0" 
+        textAnchor="middle" fill="#2d3748"
+        fontFamily="Nunito, sans-serif" fontSize={featured ? "22" : "18"} fontWeight="800"
+      >
+        {shortName}
+      </text>
+      <text 
+        x="0" y={featured ? "18" : "16"} 
+        textAnchor="middle" fill={color}
+        fontFamily="Share Tech Mono, monospace" fontSize={featured ? "15" : "13"} fontWeight="700"
+      >
+        {formatTime(user.total_time)}
+      </text>
+    </g>
+  );
+};
+
 export default function DoodlePodium({ top3 = [] }) {
   const [first, second, third] = top3;
 
@@ -149,47 +126,11 @@ export default function DoodlePodium({ top3 = [] }) {
         {/* Center: 1st Place (overlaps the side boxes) */}
         <DoodleBox x={135} y={GROUND - 150} w={170} h={150} fill={FILL_1} number="1" rank={1} />
 
-        {/* Floating Stars */}
-        {second && <HandDrawnStar cx={85} cy={GROUND - 135} fill={FILL_2} size={0.9} />}
-        {third  && <HandDrawnStar cx={355} cy={GROUND - 110} fill={FILL_3} size={0.8} />}
-        {first  && <HandDrawnStar cx={220} cy={GROUND - 180} fill={FILL_1} size={1.3} />}
+        {/* Floating User Names Above Blocks */}
+        <FloatingNameLabel cx={85} cy={GROUND - 130} user={second} color="#d4895a" />
+        <FloatingNameLabel cx={355} cy={GROUND - 105} user={third} color="#5faa86" />
+        <FloatingNameLabel cx={220} cy={GROUND - 175} user={first} color="#9180c8" featured={true} />
       </svg>
-
-      {/* Name + time labels */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px', padding: '0 8px' }}>
-        <div style={{ width: '28%', textAlign: 'center' }}>
-          {second ? <>
-            <div style={{ fontSize: '0.90rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {second.name.split(' ')[0]}
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#d4895a', fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
-              {formatTime(second.total_time)}
-            </div>
-          </> : <div style={{ height: 36 }} />}
-        </div>
-
-        <div style={{ width: '36%', textAlign: 'center' }}>
-          {first ? <>
-            <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {first.name.split(' ')[0]}
-            </div>
-            <div style={{ fontSize: '0.86rem', color: '#9180c8', fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
-              {formatTime(first.total_time)}
-            </div>
-          </> : <div style={{ height: 36 }} />}
-        </div>
-
-        <div style={{ width: '28%', textAlign: 'center' }}>
-          {third ? <>
-            <div style={{ fontSize: '0.90rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'Nunito, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {third.name.split(' ')[0]}
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#5faa86', fontFamily: 'Share Tech Mono, monospace', fontWeight: 700 }}>
-              {formatTime(third.total_time)}
-            </div>
-          </> : <div style={{ height: 36 }} />}
-        </div>
-      </div>
     </div>
   );
 }
