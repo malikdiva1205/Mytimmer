@@ -65,6 +65,21 @@ export default function PomodoroPage() {
   const startTimeRef = useRef(null);
   const soundEnabledRef = useRef(soundEnabled);
 
+  const remainingRef = useRef(remaining);
+  useEffect(() => { remainingRef.current = remaining; }, [remaining]);
+
+  const totalSecondsRef = useRef(totalSeconds);
+  useEffect(() => { totalSecondsRef.current = totalSeconds; }, [totalSeconds]);
+
+  const statusRef = useRef(status);
+  useEffect(() => { statusRef.current = status; }, [status]);
+
+  const savedRef = useRef(saved);
+  useEffect(() => { savedRef.current = saved; }, [saved]);
+
+  const userRef = useRef(user);
+  useEffect(() => { userRef.current = user; }, [user]);
+
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
@@ -179,7 +194,69 @@ export default function PomodoroPage() {
     }
   }, [status]);
 
-  useEffect(() => () => clearInterval(intervalRef.current), []);
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const spent = totalSecondsRef.current - remainingRef.current;
+      if (spent > 0 && !savedRef.current && statusRef.current !== 'idle') {
+        const now = new Date();
+        const sessionData = {
+          type: 'Pomodoro',
+          duration: spent,
+          startTime: startTimeRef.current?.toISOString() || new Date(now.getTime() - spent * 1000).toISOString(),
+          endTime: now.toISOString(),
+          date: todayStr(),
+        };
+        saveSession(sessionData);
+
+        if (userRef.current) {
+          fetch(`${API_BASE}/api/sessions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: userRef.current.id,
+              type: sessionData.type,
+              duration: sessionData.duration,
+              date: sessionData.date
+            }),
+            keepalive: true
+          }).catch(() => {});
+        }
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      clearInterval(intervalRef.current);
+      
+      const spent = totalSecondsRef.current - remainingRef.current;
+      if (spent > 0 && !savedRef.current && statusRef.current !== 'idle') {
+        const now = new Date();
+        const sessionData = {
+          type: 'Pomodoro',
+          duration: spent,
+          startTime: startTimeRef.current?.toISOString() || new Date(now.getTime() - spent * 1000).toISOString(),
+          endTime: now.toISOString(),
+          date: todayStr(),
+        };
+        saveSession(sessionData);
+
+        if (userRef.current) {
+          fetch(`${API_BASE}/api/sessions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: userRef.current.id,
+              type: sessionData.type,
+              duration: sessionData.duration,
+              date: sessionData.date
+            }),
+            keepalive: true
+          }).catch(() => {});
+        }
+      }
+    };
+  }, []);
 
   const progress = status === 'idle' ? 0 : (totalSeconds - remaining) / totalSeconds;
   const strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress);
